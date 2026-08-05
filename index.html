@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="./src/styles/main.css">
+  <script type="module" src="./src/js/main.js"></script>
+  <title>Pixel Art Creator</title>
+</head>
+
+<body>
+
+  <!-- Controls Toolbar -->
+  <div class="toolbar">
+    <!-- Grid Dimensions Preset -->
+    <div class="tool-group">
+      <label>Grid Size</label>
+      <select id="gridSizeSelect">
+        <option value="8x8">8 x 8</option>
+        <option value="16x16" selected>16 x 16</option>
+        <option value="28x36">28 x 36 (Pac-Man)</option>
+        <option value="32x32">32 x 32</option>
+        <option value="64x64">64 x 64</option>
+      </select>
+    </div>
+
+    <!-- Active Drawing Tool -->
+    <div class="tool-group">
+      <button id="toolPen" class="active" title="Pen Tool">✏️ Pen</button>
+      <button id="toolBucket" title="Paint Bucket">🪣 Bucket</button>
+      <button id="toolEraser" title="Eraser">🧹 Eraser</button>
+      <button id="toolEyedropper" title="Color Picker">🧪 Picker</button>
+    </div>
+
+    <!-- Brush Size Control -->
+    <div class="tool-group">
+      <label>Pen Size</label>
+      <select id="penSizeSelect">
+        <option value="1" selected>1 px</option>
+        <option value="2">2 px</option>
+        <option value="4">4 px</option>
+        <option value="8">8 px</option>
+      </select>
+    </div>
+
+    <!-- Active Color & Presets -->
+    <div class="tool-group">
+      <label>Color</label>
+      <input type="color" id="colorPicker" value="#ffee00">
+      <div class="palette">
+        <!-- Classic Arcade Preset Swatches -->
+        <div class="palette-swatch" style="background:#ffee00" data-color="#ffee00"></div>
+        <div class="palette-swatch" style="background:#2121ff" data-color="#2121ff"></div>
+        <div class="palette-swatch" style="background:#ff0000" data-color="#ff0000"></div>
+        <div class="palette-swatch" style="background:#ffb8ff" data-color="#ffb8ff"></div>
+        <div class="palette-swatch" style="background:#00ffff" data-color="#00ffff"></div>
+        <div class="palette-swatch" style="background:#ffb851" data-color="#ffb851"></div>
+        <div class="palette-swatch" style="background:#ffffff" data-color="#ffffff"></div>
+        <div class="palette-swatch" style="background:#000000" data-color="#000000"></div>
+      </div>
+    </div>
+
+    <!-- Zoom & Canvas Views -->
+    <div class="tool-group">
+      <button id="btnZoomOut">-</button> 🔍 <button id="btnZoomIn">+</button>
+      <button id="btnZoomReset">Reset Zoom</button>
+      <label><input type="checkbox" id="toggleGrid" checked> Grid Lines</label>
+    </div>
+
+    <!-- Actions -->
+    <div class="tool-group">
+      <button id="btnClear">Clear</button>
+      <button id="btnExport" style="background-color: #28a745; border-color: #28a745;">💾 Export PNG</button>
+    </div>
+  </div>
+
+  <!-- Main Viewport containing display canvas -->
+  <div class="viewport" id="viewport">
+    <canvas id="paintCanvas"></canvas>
+  </div>
+
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <span id="coordsDisplay">X: 0, Y: 0</span>
+    <span id="zoomDisplay">Zoom: 100%</span>
+  </div>
+
+</body>
+
+</html>
