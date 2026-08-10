@@ -21,11 +21,11 @@ export default class InputController {
   }
 
   attachListeners() {
-    this.viewport.addEventListener("mousedown", (e) => this.onMouseDown(e));
+    this.viewport.addEventListener("pointerdown", (e) => this.onMouseDown(e));
     this.viewport.addEventListener("wheel", (e) => this.onWheel(e), { passive: false });
 
-    window.addEventListener("mousemove", (e) => this.onMouseMove(e));
-    window.addEventListener("mouseup", (e) => this.onMouseUp(e));
+    this.viewport.addEventListener("pointermove", (e) => this.onMouseMove(e));
+    this.viewport.addEventListener("pointerup", (e) => this.onMouseUp(e));
 
     window.addEventListener("keydown", (e) => {
       if (e.key === "Alt" && !this.editor.isQuickPicking) {
@@ -47,30 +47,29 @@ export default class InputController {
     return this.editor.camera.worldToGrid(worldX, worldY);
   }
 
-  onMouseDown(e) {
-    const isPanAction = e.button === 1;
-
-    if (isPanAction) {
+  onMouseDown(ev) {
+    if (ev.button === 1) {
       this.editor.isPanning = true;
-      this.lastMouse = { x: e.clientX, y: e.clientY };
+      this.lastMouse = { x: ev.clientX, y: ev.clientY };
       this.viewport.classList.add("panning");
-    } else if (e.button === 0) {
+      this.viewport.setPointerCapture(ev.pointerId);
+    } else if (ev.button === 0) {
       this.editor.isDrawing = true;
-      const coords = this.getGridCoords(e);
+      const coords = this.getGridCoords(ev);
       this.editor.useActiveTool(coords, "down");
     }
   }
 
-  onMouseMove(e) {
+  onMouseMove(ev) {
     const rect = this.canvas.getBoundingClientRect();
-    this.mouseScreenPos = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    this.mouseScreenPos = { x: ev.clientX - rect.left, y: ev.clientY - rect.top };
 
-    const coords = this.getGridCoords(e);
+    const coords = this.getGridCoords(ev);
     this.editor.updateCoordsDisplay(coords);
 
     if (this.editor.isPanning) {
-      const dx = e.clientX - this.lastMouse.x;
-      const dy = e.clientY - this.lastMouse.y;
+      const dx = ev.clientX - this.lastMouse.x;
+      const dy = ev.clientY - this.lastMouse.y;
 
       this.editor.camera.x += dx;
       this.editor.camera.y += dy;
@@ -82,19 +81,22 @@ export default class InputController {
         this.editor.document.height
       );
 
-      this.lastMouse = { x: e.clientX, y: e.clientY };
+      this.lastMouse = { x: ev.clientX, y: ev.clientY };
     } else if (this.editor.isDrawing) {
       this.editor.useActiveTool(coords, "move");
     }
   }
 
-  onMouseUp(e) {
+  onMouseUp(ev) {
     if (this.editor.isDrawing) {
-      const coords = this.getGridCoords(e);
+      const coords = this.getGridCoords(ev);
       this.editor.useActiveTool(coords, "up");
+      this.editor.isDrawing = false;
+    } else if (this.editor.isPanning) {
+      this.editor.isPanning = false;
+      this.viewport.releasePointerCapture(ev.pointerId);
     }
-    this.editor.isDrawing = false;
-    this.editor.isPanning = false;
+
     this.viewport.classList.remove("panning");
   }
 
