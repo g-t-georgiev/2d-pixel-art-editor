@@ -13,20 +13,32 @@ src/
 │   └── Brush.js
 │
 ├── editor/
-│   ├── renderers/
-│   ├── ├── BackgroundRenderer.js
-│   ├── ├── DocumentRenderer.js
-│   ├── ├── GridOverlayRenderer.js
-│   ├── ├── RulerOverlayRenderer.js
-│   ├── ├── CursorOverlayRenderer.js
-│   ├── └── CanvasRenderer.js
+│   ├── controllers/
+│   │   ├── commands/
+│   │   │   ├── CommandsController.js
+│   │   │   └── DrawCommand,js
+│   │   │
+│   │   └── InputController.js
 │   │
-│   ├── Camera.js
-│   ├── ExportsManager.js
-│   ├── InputController.js
-│   ├── PixelDocument.js
-│   ├── PixelEditor.js
-│   └── UIController.js
+│   ├── core/
+│   │   ├── PixelDocument.js
+│   │   └── PixelDocumentLayer.js
+│   │
+│   ├── managers/
+│   │   ├── ExportsManager.js
+│   │   ├── HistoryManager.js
+│   │   └── UIManager.js
+│   │
+│   ├── renderers/
+│   │   ├── BackgroundRenderer.js
+│   │   ├── DocumentRenderer.js
+│   │   ├── GridOverlayRenderer.js
+│   │   ├── RulerOverlayRenderer.js
+│   │   ├── CursorOverlayRenderer.js
+│   │   └── CanvasRenderer.js
+│   │
+│   ├── Application.js
+│   └── Camera.js
 │
 ├── tools/
 │   ├── BucketTool.js
