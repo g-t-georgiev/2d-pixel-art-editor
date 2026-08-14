@@ -1,8 +1,10 @@
 export default class RulersOverlayRenderer {
-  constructor(context, camera, rulerSize = 24) {
+  constructor(context, camera, size = 24, mouseIndicatorThickness = 2) {
+    /** @type CanvasRenderingContext2D */
     this.ctx = context;
     this.camera = camera;
-    this.rulerSize = rulerSize;
+    this.size = size;
+    this.mouseIndicatorThickness = mouseIndicatorThickness;
 
     this.style = {
       barColor: "#23262d",
@@ -25,7 +27,8 @@ export default class RulersOverlayRenderer {
     else if (fraction <= 2) niceFraction = 2;
     else if (fraction <= 5) niceFraction = 5;
 
-    return niceFraction * Math.pow(10, exponent);
+    // Enforce an absolute minimum step of 1 document pixel
+    return Math.max(1, niceFraction * Math.pow(10, exponent));
   }
 
   render(canvasWidth, canvasHeight, mouseScreenPos) {
@@ -46,7 +49,7 @@ export default class RulersOverlayRenderer {
   }
 
   drawRulerAxis(length, cameraOffset, subStep, isVertical) {
-    const size = this.rulerSize;
+    const size = this.size;
     const ctx = this.ctx;
     const zoom = this.camera.zoom;
 
@@ -106,9 +109,10 @@ export default class RulersOverlayRenderer {
   }
 
   drawMouseIndicators({ x, y }) {
-    const size = this.rulerSize;
+    const size = this.size;
     const ctx = this.ctx;
 
+    ctx.lineWidth = this.mouseIndicatorThickness;
     ctx.strokeStyle = this.style.highlightColor;
     ctx.beginPath();
 
@@ -125,7 +129,7 @@ export default class RulersOverlayRenderer {
   }
 
   drawCornerBox(width, height) {
-    const size = this.rulerSize;
+    const size = this.size;
     const ctx = this.ctx;
 
     ctx.fillStyle = this.style.cornerColor;

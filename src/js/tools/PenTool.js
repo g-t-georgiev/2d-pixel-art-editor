@@ -2,21 +2,20 @@ import Tool from "./Tool.js";
 import MathUtils from "../utils/MathUtils.js";
 
 export default class PenTool extends Tool {
-  constructor() {
-    super("pen");
+  constructor(name = "pen") {
+    super(name);
     this.lastCoords = null;
   }
 
-  onMouseDown(coords, editor) {
+  onMouseDown(coords, context) {
     this.lastCoords = coords;
-    this.draw(coords, editor);
+    this.drawPoint(coords, context);
   }
 
-  onMouseMove(coords, editor) {
-    if (!editor.isDrawing) return;
+  onMouseMove(coords, context) {
+    if (!context.isDrawing) return;
 
     if (this.lastCoords) {
-      // Interpolate line between last position and current position
       const points = MathUtils.bresenhamLine(
         this.lastCoords.x,
         this.lastCoords.y,
@@ -24,9 +23,9 @@ export default class PenTool extends Tool {
         coords.y
       );
 
-      points.forEach((pt) => this.drawPoint(pt, editor));
+      points.forEach((pt) => this.drawPoint(pt, context));
     } else {
-      this.drawPoint(coords, editor);
+      this.drawPoint(coords, context);
     }
 
     this.lastCoords = coords;
@@ -36,30 +35,15 @@ export default class PenTool extends Tool {
     this.lastCoords = null;
   }
 
-  draw({ x, y }, editor) {
-    const size = editor.penSize;
+  drawPoint({ x, y }, { document, color, size }) {
     const halfSize = Math.floor(size / 2);
+    const activeColor = this.name === "eraser" ? null : color;
 
     for (let dy = 0; dy < size; dy++) {
       for (let dx = 0; dx < size; dx++) {
         const px = x - halfSize + dx;
         const py = y - halfSize + dy;
-
-        editor.document.setPixel(px, py, editor.currentColor);
-      }
-    }
-  }
-
-  drawPoint({ x, y }, editor) {
-    const size = editor.penSize;
-    const halfSize = Math.floor(size / 2);
-    const color = this.name === "eraser" ? null : editor.currentColor;
-
-    for (let dy = 0; dy < size; dy++) {
-      for (let dx = 0; dx < size; dx++) {
-        const px = x - halfSize + dx;
-        const py = y - halfSize + dy;
-        editor.document.setPixel(px, py, color);
+        document.setPixelData(px, py, activeColor);
       }
     }
   }

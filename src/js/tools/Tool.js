@@ -3,19 +3,21 @@ export default class Tool {
     if (new.target === Tool) {
       throw new TypeError("Cannot construct \"Tool\" instances directly.");
     }
-
     this.name = name;
   }
 
-  onMouseDown(coords, editor) {
-    throw new Error("Method \"onMouseDown\" is an abstract method and must be implemented in a derived class.");
+  /**
+   * @param {{x: number, y: number}} coords
+   * @param {object} context
+   * @param {import("../editor/core/PixelDocument.js").default} context.document
+   * @param {string} context.color
+   * @param {number} context.size
+   * @param {boolean} context.isDrawing
+   */
+  onMouseDown(coords, context) {
+    throw new Error("Method \"onMouseDown\" must be implemented.");
   }
 
-  onMouseMove(coords, editor) {
-    return;
-  }
-
-  onMouseUp(coords, editor) {
-    return;
-  }
+  onMouseMove(coords, context) { return; }
+  onMouseUp(coords, context) { return; }
 }

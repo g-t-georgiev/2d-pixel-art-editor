@@ -1,11 +1,11 @@
-/** @typedef {import("./PixelEditor.js").default} Editor */
-/** @typedef {import("../tools/ToolManager.js").ToolType} ToolType */
+/** @typedef {import("../Application.js").default} Application */
+/** @typedef {import("../../tools/ToolManager.js").ToolType} ToolType */
 
-export default class UIController {
-  /** @param {Editor} editor */
-  constructor(editor) {
-    /** @type Editor */
-    this.editor = editor;
+export default class UIManager {
+  /** @param {Application} app */
+  constructor(app) {
+    /** @type Application */
+    this.app = app;
 
     this.elements = {
       gridSizeSelect: document.getElementById("gridSizeSelect"),
@@ -51,39 +51,39 @@ export default class UIController {
     toolBtnKeys.forEach((name) => {
       const toolBtn = tools[name];
       toolBtn?.addEventListener("click", () => {
-        this.editor.setTool(name);
+        this.app.setTool(name);
       });
     });
 
     // Inputs
-    colorPicker?.addEventListener("input", (e) => this.editor.currentColor = e.target.value);
-    penSizeSelect?.addEventListener("change", (e) => this.editor.penSize = parseInt(e.target.value, 10));
+    colorPicker?.addEventListener("input", (e) => this.app.currentColor = e.target.value);
+    penSizeSelect?.addEventListener("change", (e) => this.app.penSize = parseInt(e.target.value, 10));
 
     gridSizeSelect?.addEventListener("change", (e) => {
       const [w, h] = e.target.value.split("x").map(Number);
-      this.editor.resizeDocument(w, h);
+      this.app.resizeDocument(w, h);
     });
 
     toggleGrid?.addEventListener("change", (e) => {
-      this.editor.renderer.showGrid = e.target.checked;
+      this.app.renderer.showGrid = e.target.checked;
     });
 
     // Palette Swatches
     document.querySelectorAll(".palette-swatch").forEach(swatch => {
       swatch.addEventListener("click", () => {
         const color = swatch.dataset.color;
-        this.editor.setColor(color);
+        this.app.setColor(color);
       });
     });
 
     // Zoom Buttons
-    btnZoomIn?.addEventListener("click", () => this.editor.zoomBy(1.2));
-    btnZoomOut?.addEventListener("click", () => this.editor.zoomBy(0.8));
-    btnZoomReset?.addEventListener("click", () => this.editor.resetView());
+    btnZoomIn?.addEventListener("click", () => this.app.zoomBy(1.2));
+    btnZoomOut?.addEventListener("click", () => this.app.zoomBy(0.8));
+    btnZoomReset?.addEventListener("click", () => this.app.resetView());
 
     // Actions
-    btnClear?.addEventListener("click", () => this.editor.clearDocument());
-    btnExport?.addEventListener("click", () => this.editor.exportPNG());
+    btnClear?.addEventListener("click", () => this.app.clearDocument());
+    btnExport?.addEventListener("click", () => this.app.exportPNG());
   }
 
   /** @param {ToolType} name */

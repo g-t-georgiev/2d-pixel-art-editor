@@ -1,6 +1,6 @@
 import { PenTool, EraserTool, BucketTool, EyedropperTool } from "./index.js";
 
-/** @typedef {import("../editor/PixelEditor.js").default} Editor */
+/** @typedef {import("../editor/Application.js").default} Application */
 
 /**
  * @typedef {object} Tools
@@ -25,11 +25,11 @@ export default class ToolManager {
   previousTool = this.activeTool;
 
   /**
-   * @param {Editor} editor 
+   * @param {Application} app 
    */
-  constructor(editor) {
-    /** @type Editor */
-    this.editor = editor;
+  constructor(app) {
+    /** @type Application */
+    this.app = app;
     /** @type Tools */
     this.tools = {
       pen: new PenTool(),
@@ -39,29 +39,51 @@ export default class ToolManager {
     };
   }
 
-  /**
-   * @param {ToolType} name
-   */
-  setActiveTool(name) {
-    if (!Object.prototype.hasOwnProperty.call(this.tools, name))
-      console.warn(`No tool with name "${name}" was found.`);
+  /** @param {ToolType} type */
+  setActiveTool(type) {
+    if (!Object.prototype.hasOwnProperty.call(this.tools, type))
+      console.warn(`No tool with name "${type}" was found.`);
 
-    if (this.activeTool === name) return;
+    if (this.activeTool === type) return;
 
     if (this.activeTool !== "eyedropper") {
       this.previousTool = this.activeTool;
     }
 
-    this.activeTool = name;
+    this.activeTool = type;
   }
 
   trySwitchToPrevTool() {
     if (!this.previousTool || this.previousTool === this.activeTool) return;
 
-    this.editor.setTool(this.previousTool);
+    this.app.setTool(this.previousTool);
   }
 
   getActiveTool() {
     return this.tools[this.activeTool];
+  }
+
+  /**
+     * Evaluates the active tool and passes a strictly defined context.
+     * @param {"down" | "up" | "move"} action
+     * @param {{x: number, y: number}} coords
+     */
+  applyActiveTool(action = "down", coords) {
+    const tool = this.getActiveTool();
+    if (!tool) return;
+
+    // Create a standardized payload containing only what tools need to operate
+    const context = {
+      document: this.app.document,
+      color: this.app.currentColor,
+      size: this.app.penSize,
+      isDrawing: this.app.isDrawing
+    };
+
+    const methodName = `onMouse${action[0].toUpperCase() + action.slice(1)}`;
+
+    if (typeof tool[methodName] === "function") {
+      tool[methodName](coords, context);
+    }
   }
 }

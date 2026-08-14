@@ -1,6 +1,8 @@
-import PixelEditor from "./editor/PixelEditor.js";
+import Application from "./editor/Application.js";
 
 window.addEventListener("DOMContentLoaded", () => {
   const canvasElement = document.getElementById("paintCanvas");
-  window.pixelEditor = new PixelEditor(canvasElement);
+
+  // Development only
+  window.__pixelEditor__ = new Application(canvasElement);
 });

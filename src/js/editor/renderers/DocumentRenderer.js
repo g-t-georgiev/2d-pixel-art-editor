@@ -5,13 +5,18 @@ export default class DocumentRenderer {
   }
 
   render(document) {
-    // 1. Render Pixel Grid Matrix
-    for (let y = 0; y < document.height; y++) {
-      for (let x = 0; x < document.width; x++) {
-        const color = document.getPixel(x, y);
-        if (color) {
-          this.ctx.fillStyle = color;
-          this.ctx.fillRect(x, y, 1, 1);
+    // 1. Render ALL visible layers from bottom to top
+    for (const layer of document.layers) {
+      if (!layer.visible) continue;
+
+      for (let y = 0; y < document.height; y++) {
+        for (let x = 0; x < document.width; x++) {
+          const color = layer.getPixelData(x, y, layer.id);
+
+          if (color) {
+            this.ctx.fillStyle = color;
+            this.ctx.fillRect(x, y, 1, 1);
+          }
         }
       }
     }

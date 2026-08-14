@@ -4,20 +4,23 @@ import GridOverlayRenderer from "./GridOverlayRenderer.js";
 import RulersOverlayRenderer from "./RulersOverlayRenderer.js";
 import CursorOverlayRenderer from "./CursorOverlayRenderer.js";
 
-/** @typedef {import("../PixelEditor.js").default} Editor */
-/** @typedef {import("../PixelDocument.js").default} Document */
+/** @typedef {import("../Application.js").default} Application */
 /** @typedef {import("../Camera.js").default} Camera */
 
 export default class CanvasRenderer {
   /**
-   * 
+   * @param {Application} app
    * @param {HTMLCanvasElement} canvas 
    * @param {Camera} camera 
    * @param {number} rulerSize 
    */
-  constructor(canvas, camera, rulerSize = 24) {
+  constructor(app, canvas, camera, rulerSize = 24) {
+    /** @type Application */
+    this.app = app;
+    /** @type HTMLCanvasElement */
     this.canvas = canvas;
     this.context = canvas.getContext("2d");
+    /** @type Camera */
     this.camera = camera;
 
     // Sub-renderers
@@ -36,49 +39,53 @@ export default class CanvasRenderer {
     this.gridRenderer.showGrid = value;
   }
 
-  /**
-   * @param {Editor} editor
-   * @param {Document} document
-   * @param {{ x: number; y: number; }} mouseScreenPos
-   */
-  render(editor, mouseScreenPos = { x: -1, y: -1 }) {
-    const { document } = editor;
+  /** @param {{ x: number; y: number; }} mouseScreenPos */
+  render(mouseScreenPos = { x: -1, y: -1 }) {
+    const DPR = this.app.devicePixelRatio;
+    const { document, isDrawing, tools, penSize, currentColor } = this.app;
 
     // Disable pixel smoothing for crisp pixel art rendering
     this.context.imageSmoothingEnabled = false;
 
-    // Clear Workspace
-    this.context.setTransform(1, 0, 0, 1, 0, 0);
+    // Clear workspace buffer in raw pixels
     this.context.fillStyle = "#33353d";
     this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+    this.context.save();
+    // Scale everything below to CSS pixel units
+    this.context.scale(DPR, DPR);
 
     // World Space Pass
     this.context.save();
     this.context.translate(this.camera.x, this.camera.y);
     this.context.scale(this.camera.zoom, this.camera.zoom);
 
-    this.backgroundRenderer.render(document.width, document.height);
-    this.docRenderer.render(document);
-    this.gridRenderer.render(document);
+    this.backgroundRenderer.render(this.app.document.width, this.app.document.height);
+    this.docRenderer.render(this.app.document);
+    this.gridRenderer.render(this.app.document);
 
-    if (!editor.isDrawing) {
+    if (!isDrawing) {
       // Render Hover Preview overlay (calculates grid coordinates from screen position)
       const rect = this.canvas.getBoundingClientRect();
-      const { worldX, worldY } = this.camera.screenToWorld(mouseScreenPos.x + rect.left, mouseScreenPos.y + rect.top, rect);
-      const gridCoords = this.camera.worldToGrid(worldX, worldY);
-
-      this.cursorRenderer.render(
-        editor.document,
-        gridCoords,
-        editor.activeToolName,
-        editor.penSize,
-        editor.currentColor
+      const { worldX, worldY } = this.camera.screenToWorld(
+        mouseScreenPos.x + rect.left,
+        mouseScreenPos.y + rect.top,
+        rect
       );
+      const gridCoords = this.camera.worldToGrid(worldX, worldY);
+      const activeToolName = tools.getActiveTool()?.name;
+      this.cursorRenderer.render(document, gridCoords, activeToolName, penSize, currentColor);
     }
 
-    this.context.restore();
+    this.context.restore(); // Exit camera space, back to CSS screen space
 
-    // Screen Space Pass (Rulers, Guides)
-    this.rulerRenderer.render(this.canvas.width, this.canvas.height, mouseScreenPos);
+    // UI Overlays
+    this.rulerRenderer.render(
+      this.app.canvasWidthInCSSPixels,
+      this.app.canvasHeightInCSSPixels,
+      mouseScreenPos
+    );
+
+    this.context.restore(); // Exit DPR scaling space
   }
 }
