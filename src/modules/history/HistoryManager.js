@@ -9,7 +9,6 @@ export default class HistoryManager {
     command.execute();
     this.undoStack.push(command);
     this.redoStack = []; // Clear redo on new action
-    this.editor.requestRender();
   }
 
   undo() {
@@ -17,7 +16,6 @@ export default class HistoryManager {
     const command = this.undoStack.pop();
     command.undo();
     this.redoStack.push(command);
-    this.editor.requestRender();
   }
 
   redo() {
@@ -25,6 +23,5 @@ export default class HistoryManager {
     const command = this.redoStack.pop();
     command.execute();
     this.undoStack.push(command);
-    this.editor.requestRender();
   }
 }

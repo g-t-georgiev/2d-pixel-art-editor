@@ -8,8 +8,6 @@ import ToolManager from "../tools/ToolManager.js";
 import ExportsManager from "./managers/ExportsManager.js";
 import ColorUtils from "../utils/ColorUtils.js";
 
-/** @typedef {import("../tools/ToolManager.js").ToolType} ToolType */
-
 export default class Application {
   /** @private */
   isDrawing = false;
@@ -107,7 +105,7 @@ export default class Application {
     observer.observe(this.canvas.parentElement);
   }
 
-  /** @param {ToolType} name */
+  /** @param {import("../tools/ToolManager.js").ToolType} name */
   setTool(name) {
     this.ui.setActiveTool(name);
     this.tools.setActiveTool(name);

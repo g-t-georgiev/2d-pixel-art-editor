@@ -1,3 +1,4 @@
+// Reusable type definitions
 /** @typedef {import("../Application.js").default} Application */
 /** @typedef {import("../../tools/ToolManager.js").ToolType} ToolType */
 

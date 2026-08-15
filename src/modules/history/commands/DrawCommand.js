@@ -2,7 +2,12 @@ export default class DrawCommand {
   constructor(document, layerId, pixels) {
     this.document = document;
     this.layerId = layerId;
-    /** @type Array<{ x: number; y: number; oldColor: string; newColor: string; }> */
+
+    /**
+     * @type Array<{ x: number; y: number; oldColor: string; newColor: string; }>
+     *
+     * @private
+     */
     this.pixels = pixels;
   }
 
