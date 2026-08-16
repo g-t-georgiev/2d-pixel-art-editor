@@ -5,42 +5,79 @@
 The application is divided into the following directories and corresponding components:
 
 ```
-src/
-├── algorithms/
-│   └── FloodFill.js
+root/
+├── .vscode/
+│   ├── extensions.json
+│   └─ settings.json
 │
-├── brushes/
-│   └── Brush.js
+├── node_modules/
+│   └─ ...
 │
-├── editor/
-│   ├── renderers/
-│   ├── ├── BackgroundRenderer.js
-│   ├── ├── DocumentRenderer.js
-│   ├── ├── GridOverlayRenderer.js
-│   ├── ├── RulerOverlayRenderer.js
-│   ├── ├── CursorOverlayRenderer.js
-│   ├── └── CanvasRenderer.js
+├── src/
+│   ├── modules/
+│   │   ├── algorithms/
+│   │   │   └── FloodFill.ts
+│   │   │
+│   │   ├── brushes/
+│   │   │   └── Brush.ts
+│   │   │
+│   │   ├── editor/
+│   │   │   ├── controllers/
+│   │   │   │   └── InputController.ts
+│   │   │   │
+│   │   │   ├── core/
+│   │   │   │   ├── PixelDocument.ts
+│   │   │   │   └── PixelDocumentLayer.ts
+│   │   │   │
+│   │   │   ├── managers/
+│   │   │   │   ├── ExportsManager.ts
+│   │   │   │   ├── HistoryManager.ts
+│   │   │   │   └── UIManager.js
+│   │   │   │
+│   │   │   ├── renderers/
+│   │   │   │   ├── BackgroundRenderer.ts
+│   │   │   │   ├── DocumentRenderer.ts
+│   │   │   │   ├── GridOverlayRenderer.ts
+│   │   │   │   ├── RulerOverlayRenderer.ts
+│   │   │   │   ├── CursorOverlayRenderer.ts
+│   │   │   │   └── CanvasRenderer.ts
+│   │   │   │
+│   │   │   ├── Application.ts
+│   │   │   └── Camera.ts
+│   │   │
+│   │   ├── history/
+│   │   │   ├── commands/
+│   │   │   │   ├── Command.ts
+│   │   │   │   ├── DrawCommand.ts
+│   │   │   │   └── ....
+│   │   │   │
+│   │   │   └── HistoryManager.ts
+│   │   │
+│   │   ├── tools/
+│   │   │   ├── BucketTool.ts
+│   │   │   ├── EraserTool.ts
+│   │   │   ├── EyedropperTool.ts
+│   │   │   ├── index.ts
+│   │   │   ├── PenTool.ts
+│   │   │   ├── Tool.ts
+│   │   │   └── ToolManager.ts
+│   │   │
+│   │   ├── utils/
+│   │   │   ├── ColorUtils.ts
+│   │   │   ├── EventEmitter.ts
+│   │   │   └── MathUtils.ts
+│   │   │
+│   │   ├── index.ts
+│   │   └── types.js
 │   │
-│   ├── Camera.js
-│   ├── ExportsManager.js
-│   ├── InputController.js
-│   ├── PixelDocument.js
-│   ├── PixelEditor.js
-│   └── UIController.js
+│   └── styles/
+│       └── styles.css
 │
-├── tools/
-│   ├── BucketTool.js
-│   ├── EraserTool.js
-│   ├── EyedropperTool.js
-│   ├── index.js
-│   ├── PenTool.js
-│   ├── Tool.js
-│   └── ToolManager.js
-│
-├── utils/
-│   ├── ColorUtils.js
-│   ├── EventEmitter.js
-│   └── MathUtils.js
-│
-└── main.js
+├── .editorconfig
+├── .gitattributes
+├── .gitignore
+├── index.html
+├── package.json
+├── README.md
+└── tsconfig.json
 ```

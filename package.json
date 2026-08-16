@@ -1,0 +1,27 @@
+{
+  "name": "2d-pixel-art-editor",
+  "version": "1.0.0",
+  "description": "The application is divided into the following directories and corresponding components:",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/g-t-georgiev/2d-pixel-art-editor.git"
+  },
+  "keywords": [],
+  "author": "Georgi Georgiev",
+  "license": "MIT",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/g-t-georgiev/2d-pixel-art-editor/issues"
+  },
+  "homepage": "https://github.com/g-t-georgiev/2d-pixel-art-editor#readme",
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vite": "^8.2.1"
+  }
+}
