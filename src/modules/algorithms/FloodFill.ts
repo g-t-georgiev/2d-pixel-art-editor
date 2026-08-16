@@ -1,5 +1,12 @@
+import type PixelDocument from "../editor/core/PixelDocument";
+
 export default class FloodFill {
-  static execute(document, startX, startY, targetColor) {
+  static execute(
+    document: PixelDocument,
+    startX: number,
+    startY: number,
+    targetColor: string
+  ) {
     if (!document.isWithinBounds(startX, startY)) return;
 
     const originalColor = document.getPixelData(startX, startY);
@@ -8,7 +15,7 @@ export default class FloodFill {
     const stack = [[startX, startY]];
 
     while (stack.length > 0) {
-      const [x, y] = stack.pop();
+      const [x, y] = stack.pop()!;
 
       if (document.isWithinBounds(x, y)) {
         const isTheSameColor = document.getPixelData(x, y) === originalColor;

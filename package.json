@@ -4,6 +4,9 @@
   "description": "The application is divided into the following directories and corresponding components:",
   "main": "./src/modules/main.js",
   "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -17,5 +20,9 @@
   "bugs": {
     "url": "https://github.com/g-t-georgiev/2d-pixel-art-editor/issues"
   },
-  "homepage": "https://github.com/g-t-georgiev/2d-pixel-art-editor#readme"
+  "homepage": "https://github.com/g-t-georgiev/2d-pixel-art-editor#readme",
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vite": "^8.2.1"
+  }
 }

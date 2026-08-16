@@ -1,6 +1,6 @@
 export default class MathUtils {
   /** Returns array of all pixels connecting (x0, y0) to (x1, y1) */
-  static bresenhamLine(x0, y0, x1, y1) {
+  static bresenhamLine(x0: number, y0: number, x1: number, y1: number) {
     const points = [];
     const dx = Math.abs(x1 - x0);
     const dy = Math.abs(y1 - y0);

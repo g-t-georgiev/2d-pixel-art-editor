@@ -1,36 +1,24 @@
-import { PenTool, EraserTool, BucketTool, EyedropperTool } from "./index.js";
+import type Application from "../editor/Application";
+import { PointerEventType } from "../editor/controllers/InputController";
+import { PenTool, EraserTool, BucketTool, EyedropperTool } from "./index";
 
-/** @typedef {import("../editor/Application.js").default} Application */
+export type Tools = {
+  pen: PenTool;
+  eraser: EraserTool;
+  bucket: BucketTool;
+  eyedropper: EyedropperTool;
+}
 
-/**
- * @typedef {object} Tools
- * @property {PenTool} pen
- * @property {EraserTool} eraser
- * @property {BucketTool} bucket
- * @property {EyedropperTool} eyedropper 
- */
+export type ToolType = keyof Tools;
 
-/** @typedef {keyof Tools} ToolType */
 
 export default class ToolManager {
-  /** 
-   * @private
-   * @type ToolType
-   */
-  activeTool = "pen";
-  /**
-   * @private
-   * @type ToolType
-   */
-  previousTool = this.activeTool;
+  private activeTool: ToolType = "pen";
+  private previousTool: ToolType = this.activeTool;
 
-  /**
-   * @param {Application} app 
-   */
-  constructor(app) {
-    /** @type Application */
-    this.app = app;
-    /** @type Tools */
+  tools: Tools;
+
+  constructor(private app: Application) {
     this.tools = {
       pen: new PenTool(),
       eraser: new EraserTool(),
@@ -39,8 +27,7 @@ export default class ToolManager {
     };
   }
 
-  /** @param {ToolType} type */
-  setActiveTool(type) {
+  setActiveTool(type: ToolType) {
     if (!Object.prototype.hasOwnProperty.call(this.tools, type))
       console.warn(`No tool with name "${type}" was found.`);
 
@@ -63,13 +50,13 @@ export default class ToolManager {
     return this.tools[this.activeTool];
   }
 
-  /**
-     * Evaluates the active tool and passes a strictly defined context.
-     * @param {"down" | "up" | "move"} action
-     * @param {{x: number, y: number}} coords
-     */
-  applyActiveTool(action = "down", coords) {
+  /** Evaluates the active tool and passes a strictly defined context. */
+  applyActiveTool(
+    action: PointerEventType = PointerEventType.Down,
+    coords: { x: number; y: number; }
+  ) {
     const tool = this.getActiveTool();
+
     if (!tool) return;
 
     // Create a standardized payload containing only what tools need to operate
@@ -80,7 +67,8 @@ export default class ToolManager {
       isDrawing: this.app.isDrawing
     };
 
-    const methodName = `onMouse${action[0].toUpperCase() + action.slice(1)}`;
+    const actionLabel = (action[0].toUpperCase() + action.slice(1)) as Capitalize<typeof action>;
+    const methodName = `onMouse${actionLabel}` as const;
 
     if (typeof tool[methodName] === "function") {
       tool[methodName](coords, context);

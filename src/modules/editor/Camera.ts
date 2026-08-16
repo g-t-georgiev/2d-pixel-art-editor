@@ -1,14 +1,17 @@
 export default class Camera {
-  constructor() {
-    this.x = 0;
-    this.y = 0;
-    this.zoom = 24;
-    this.uiPadding = 24;
-    this.viewportPadding = 32;
-  }
+  x = 0;
+  y = 0;
+  zoom = 24;
+  uiPadding = 24;
+  viewportPadding = 32;
 
   /** Calculates the exact zoom required to fit the document in the viewport */
-  getFitZoom(canvasWidth, canvasHeight, docWidth, docHeight) {
+  getFitZoom(
+    canvasWidth: number,
+    canvasHeight: number,
+    docWidth: number,
+    docHeight: number
+  ) {
     if (!canvasWidth || !canvasHeight) return 1;
 
     const availWidth = Math.max(1, canvasWidth - this.viewportPadding * 2 - this.uiPadding);
@@ -17,7 +20,12 @@ export default class Camera {
     return Math.min(availWidth / docWidth, availHeight / docHeight);
   }
 
-  fitToView(canvasWidth, canvasHeight, docWidth, docHeight) {
+  fitToView(
+    canvasWidth: number,
+    canvasHeight: number,
+    docWidth: number,
+    docHeight: number
+  ) {
     if (!canvasWidth || !canvasHeight || !docWidth || !docHeight) return;
 
     this.zoom = this.getFitZoom(canvasWidth, canvasHeight, docWidth, docHeight);
@@ -29,7 +37,14 @@ export default class Camera {
     this.y = this.uiPadding + (canvasHeight - this.uiPadding - zoomedHeight) / 2;
   }
 
-  calculateZoom(clientX, clientY, zoomFactor, canvasRect, docWidth, docHeight) {
+  calculateZoom(
+    clientX: number,
+    clientY: number,
+    zoomFactor: number,
+    canvasRect: DOMRect,
+    docWidth: number,
+    docHeight: number
+  ) {
     const minZoom = this.getFitZoom(canvasRect.width, canvasRect.height, docWidth, docHeight);
     const maxZoom = 150;
     const newZoom = Math.max(minZoom, Math.min(this.zoom * zoomFactor, maxZoom));
@@ -40,7 +55,12 @@ export default class Camera {
     this.zoom = newZoom;
   }
 
-  clamp(canvasWidth, canvasHeight, docWidth, docHeight) {
+  clamp(
+    canvasWidth: number,
+    canvasHeight: number,
+    docWidth: number,
+    docHeight: number
+  ) {
     if (!canvasWidth || !canvasHeight) return;
 
     const zoomedWidth = docWidth * this.zoom;
@@ -59,10 +79,13 @@ export default class Camera {
     this.y = Math.min(maxY, Math.max(this.y, minY));
   }
 
-  /**
-   * Centers the viewport on a specific world coordinate
-   */
-  centerOnWorld(worldX, worldY, canvasWidth, canvasHeight) {
+  /** Centers the viewport on a specific world coordinate. */
+  centerOnWorld(
+    worldX: number,
+    worldY: number,
+    canvasWidth: number,
+    canvasHeight: number
+  ) {
     if (!canvasWidth || !canvasHeight) return;
 
     // Calculate where the world coordinate is in scaled space
@@ -74,12 +97,7 @@ export default class Camera {
     this.y = (canvasHeight / 2) - scaledY;
   }
 
-  /**
-   * @param {number} screenX 
-   * @param {number} screenY 
-   * @param {DOMRect} canvasRect 
-   */
-  screenToWorld(screenX, screenY, canvasRect) {
+  screenToWorld(screenX: number, screenY: number, canvasRect: DOMRect) {
     const localX = screenX - canvasRect.left;
     const localY = screenY - canvasRect.top;
 
@@ -89,11 +107,7 @@ export default class Camera {
     return { localX, localY, worldX, worldY };
   }
 
-  /**
-   * @param {number} worldX 
-   * @param {number} worldY 
-   */
-  worldToGrid(worldX, worldY) {
+  worldToGrid(worldX: number, worldY: number) {
     return {
       x: Math.floor(worldX),
       y: Math.floor(worldY)

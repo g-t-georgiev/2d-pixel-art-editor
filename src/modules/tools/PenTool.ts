@@ -1,18 +1,19 @@
-import Tool from "./Tool.js";
-import MathUtils from "../utils/MathUtils.js";
+import Tool, { type ToolContext } from "./Tool";
+import MathUtils from "../utils/MathUtils";
 
 export default class PenTool extends Tool {
+  private lastCoords: { x: number; y: number; } | null = null;
+
   constructor(name = "pen") {
     super(name);
-    this.lastCoords = null;
   }
 
-  onMouseDown(coords, context) {
+  onMouseDown(coords: { x: number; y: number; }, context: ToolContext) {
     this.lastCoords = coords;
     this.drawPoint(coords, context);
   }
 
-  onMouseMove(coords, context) {
+  onMouseMove(coords: { x: number; y: number; }, context: ToolContext) {
     if (!context.isDrawing) return;
 
     if (this.lastCoords) {
@@ -35,7 +36,10 @@ export default class PenTool extends Tool {
     this.lastCoords = null;
   }
 
-  drawPoint({ x, y }, { document, color, size }) {
+  private drawPoint(
+    { x, y }: { x: number; y: number; },
+    { document, color, size }: ToolContext
+  ) {
     const halfSize = Math.floor(size / 2);
     const activeColor = this.name === "eraser" ? null : color;
 
