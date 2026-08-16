@@ -10,60 +10,65 @@ root/
 │   ├── extensions.json
 │   └─ settings.json
 │
+├── node_modules/
+│   └─ ...
+│
 ├── src/
 │   ├── modules/
 │   │   ├── algorithms/
-│   │   │   └── FloodFill.js
+│   │   │   └── FloodFill.ts
 │   │   │
 │   │   ├── brushes/
-│   │   │   └── Brush.js
+│   │   │   └── Brush.ts
 │   │   │
 │   │   ├── editor/
 │   │   │   ├── controllers/
-│   │   │   │   └── InputController.js
+│   │   │   │   └── InputController.ts
 │   │   │   │
 │   │   │   ├── core/
-│   │   │   │   ├── PixelDocument.js
-│   │   │   │   └── PixelDocumentLayer.js
+│   │   │   │   ├── PixelDocument.ts
+│   │   │   │   └── PixelDocumentLayer.ts
 │   │   │   │
 │   │   │   ├── managers/
-│   │   │   │   ├── ExportsManager.js
-│   │   │   │   ├── HistoryManager.js
+│   │   │   │   ├── ExportsManager.ts
+│   │   │   │   ├── HistoryManager.ts
 │   │   │   │   └── UIManager.js
 │   │   │   │
 │   │   │   ├── renderers/
-│   │   │   │   ├── BackgroundRenderer.js
-│   │   │   │   ├── DocumentRenderer.js
-│   │   │   │   ├── GridOverlayRenderer.js
-│   │   │   │   ├── RulerOverlayRenderer.js
-│   │   │   │   ├── CursorOverlayRenderer.js
-│   │   │   │   └── CanvasRenderer.js
+│   │   │   │   ├── BackgroundRenderer.ts
+│   │   │   │   ├── DocumentRenderer.ts
+│   │   │   │   ├── GridOverlayRenderer.ts
+│   │   │   │   ├── RulerOverlayRenderer.ts
+│   │   │   │   ├── CursorOverlayRenderer.ts
+│   │   │   │   └── CanvasRenderer.ts
 │   │   │   │
-│   │   │   ├── Application.js
-│   │   │   └── Camera.js
+│   │   │   ├── Application.ts
+│   │   │   └── Camera.ts
 │   │   │
 │   │   ├── history/
 │   │   │   ├── commands/
-│   │   │   │   ├── DrawCommand.js
+│   │   │   │   ├── Command.ts
+│   │   │   │   ├── DrawCommand.ts
 │   │   │   │   └── ....
 │   │   │   │
-│   │   │   └── HistoryManager.js
+│   │   │   └── HistoryManager.ts
 │   │   │
 │   │   ├── tools/
-│   │   │   ├── BucketTool.js
-│   │   │   ├── EraserTool.js
-│   │   │   ├── EyedropperTool.js
-│   │   │   ├── index.js
-│   │   │   ├── PenTool.js
-│   │   │   ├── Tool.js
-│   │   │   └── ToolManager.js
+│   │   │   ├── BucketTool.ts
+│   │   │   ├── EraserTool.ts
+│   │   │   ├── EyedropperTool.ts
+│   │   │   ├── index.ts
+│   │   │   ├── PenTool.ts
+│   │   │   ├── Tool.ts
+│   │   │   └── ToolManager.ts
 │   │   │
 │   │   ├── utils/
-│   │   │   ├── ColorUtils.js
-│   │   │   ├── EventEmitter.js
-│   │   │   └── MathUtils.js
+│   │   │   ├── ColorUtils.ts
+│   │   │   ├── EventEmitter.ts
+│   │   │   └── MathUtils.ts
 │   │   │
-│   │   └── main.js
+│   │   ├── index.ts
+│   │   └── types.js
 │   │
 │   └── styles/
 │       └── styles.css
@@ -73,5 +78,6 @@ root/
 ├── .gitignore
 ├── index.html
 ├── package.json
-└── README.md
+├── README.md
+└── tsconfig.json
 ```
