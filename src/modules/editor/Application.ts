@@ -1,37 +1,41 @@
-import { GlobalEmitter } from "../utils/EventEmitter.js";
-import PixelDocument from "./core/PixelDocument.js";
-import Camera from "./Camera.js";
-import CanvasRenderer from "./renderers/CanvasRenderer.js";
-import InputController from "./controllers/InputController.js";
-import UIManager from "./managers/UIManager.js";
-import ToolManager from "../tools/ToolManager.js";
-import ExportsManager from "./managers/ExportsManager.js";
-import ColorUtils from "../utils/ColorUtils.js";
+import { GlobalEmitter } from "../utils/EventEmitter";
+import PixelDocument from "./core/PixelDocument";
+import Camera from "./Camera";
+import CanvasRenderer from "./renderers/CanvasRenderer";
+import InputController, { PointerEventType } from "./controllers/InputController";
+import UIManager from "./managers/UIManager";
+import ToolManager, { ToolType } from "../tools/ToolManager";
+import ExportsManager from "./managers/ExportsManager";
 
 export default class Application {
-  /** @private */
-  isDrawing = false;
-  /** @private */
-  isPanning = false;
-  /** @private */
-  isQuickColorPicking = false;
-
   penSize = 1;
   currentColor = "#ffee00";
 
-  /** @readonly */
-  events = GlobalEmitter;
+  isDrawing = false;
+  isPanning = false;
+  isQuickColorPicking = false;
 
-  constructor(canvasElement) {
-    this.canvas = canvasElement;
+  readonly camera: Camera;
+  readonly renderer: CanvasRenderer;
+  readonly document: PixelDocument;
+  readonly tools: ToolManager;
+  readonly ui: UIManager;
+  readonly input: InputController;
+  readonly exports: ExportsManager;
+  readonly events = GlobalEmitter;
+
+  private canvasContainer: HTMLElement;
+
+  constructor(public canvas: HTMLCanvasElement) {
+    this.canvasContainer = canvas.parentElement!;
+
     this.camera = new Camera();
     this.renderer = new CanvasRenderer(this, this.canvas, this.camera);
     this.document = new PixelDocument(16, 16);
 
     this.tools = new ToolManager(this);
-
     this.ui = new UIManager(this);
-    this.input = new InputController(this, this.renderer.canvas, this.renderer.canvas.parentElement);
+    this.input = new InputController(this, this.canvas, this.canvasContainer);
 
     this.exports = new ExportsManager();
 
@@ -102,27 +106,25 @@ export default class Application {
       }
     });
 
-    observer.observe(this.canvas.parentElement);
+    observer.observe(this.canvasContainer);
   }
 
-  /** @param {import("../tools/ToolManager.js").ToolType} name */
-  setTool(name) {
+  setTool(name: ToolType) {
     this.ui.setActiveTool(name);
     this.tools.setActiveTool(name);
   }
 
-  /** @param {string} color */
-  setColor(color) {
+  setColor(color: string) {
     this.ui.updateColorUI(color);
     this.currentColor = color;
   }
 
-  useActiveTool(coords, action) {
+  useActiveTool(coords: { x: number; y: number; }, action: PointerEventType) {
     // Delegation: ToolManager figures out the arguments now
     this.tools.applyActiveTool(action, coords);
   }
 
-  resizeDocument(width, height) {
+  resizeDocument(width: number, height: number) {
     this.document.resize(width, height);
     this.resetView();
   }
@@ -140,8 +142,8 @@ export default class Application {
     );
   }
 
-  zoomBy(factor) {
-    const rect = this.renderer.canvas.getBoundingClientRect();
+  zoomBy(factor: number) {
+    const rect = this.canvas.getBoundingClientRect();
     const centerX = rect.left + this.canvasWidthInCSSPixels / 2;
     const centerY = rect.top + this.canvasHeightInCSSPixels / 2;
 
@@ -155,7 +157,7 @@ export default class Application {
     );
   }
 
-  updateCoordsDisplay(coords) {
+  updateCoordsDisplay(coords: { x: number; y: number; }) {
     this.ui.updateStatus(coords, this.camera.zoom);
   }
 

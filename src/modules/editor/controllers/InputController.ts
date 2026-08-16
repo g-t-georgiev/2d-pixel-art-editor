@@ -1,53 +1,60 @@
-/** @typedef {import("../Application.js").default} Application */
+import type Application from "../Application";
+
+export enum MouseButton {
+  Left,
+  Middle,
+  Right,
+}
+
+export enum PointerEventType {
+  Down = "down",
+  Move = "move",
+  Up = "up",
+}
+
 
 export default class InputController {
-  /** 
-   * @param {Application} app
-   * @param {HTMLCanvasElement} canvas
-   * @param {HTMLElement} viewport
-   */
-  constructor(app, canvas, viewport) {
-    /** @type Application */
-    this.app = app;
-    /** @type HTMLCanvasElement */
-    this.canvas = canvas;
-    /** @type HTMLElement */
-    this.viewport = viewport;
+  private lastMouse: { x: number; y: number; } = { x: 0, y: 0 };
 
-    this.lastMouse = { x: 0, y: 0 };
-    this.mouseScreenPos = { x: -1, y: -1 };
+  public mouseScreenPos: { x: number; y: number; } = { x: -1, y: -1 };
 
+  constructor(
+    private app: Application,
+    private canvas: HTMLCanvasElement,
+    private viewport: HTMLElement
+  ) {
     this.attachListeners();
   }
 
   attachListeners() {
-    this.viewport.addEventListener("pointerdown", (e) => this.onMouseDown(e));
-    this.viewport.addEventListener("wheel", (e) => this.onWheel(e), { passive: false });
+    this.viewport.addEventListener("pointerdown", (ev) => this.onMouseDown(ev));
+    this.viewport.addEventListener("wheel", (ev) => this.onWheel(ev), { passive: false });
 
-    this.viewport.addEventListener("pointermove", (e) => this.onMouseMove(e));
-    this.viewport.addEventListener("pointerup", (e) => this.onMouseUp(e));
+    this.viewport.addEventListener("pointermove", (ev) => this.onMouseMove(ev));
+    this.viewport.addEventListener("pointerup", (ev) => this.onMouseUp(ev));
 
-    window.addEventListener("keydown", (e) => {
-      if (e.key === "Alt" && !this.app.isQuickPicking) {
-        this.app.isQuickPicking = true;
+    window.addEventListener("keydown", (ev) => {
+      if (ev.key === "Alt" && !this.app.isQuickColorPicking) {
+        this.app.isQuickColorPicking = true;
         this.app.setTool("eyedropper");
       }
     });
 
-    window.addEventListener("keyup", (e) => {
-      if (e.key === "Alt" && this.app.isQuickPicking) {
-        this.app.isQuickPicking = false;
+    window.addEventListener("keyup", (ev) => {
+      if (ev.key === "Alt" && this.app.isQuickColorPicking) {
+        this.app.isQuickColorPicking = false;
       }
     });
   }
 
-  getGridCoords(e) {
+  getGridCoords(ev: PointerEvent) {
     const rect = this.canvas.getBoundingClientRect();
-    const { worldX, worldY } = this.app.camera.screenToWorld(e.clientX, e.clientY, rect);
+    const { worldX, worldY } = this.app.camera.screenToWorld(ev.clientX, ev.clientY, rect);
+
     return this.app.camera.worldToGrid(worldX, worldY);
   }
 
-  onMouseDown(ev) {
+  onMouseDown(ev: PointerEvent) {
     if (ev.button === 1) {
       this.app.isPanning = true;
       this.lastMouse = { x: ev.clientX, y: ev.clientY };
@@ -56,18 +63,18 @@ export default class InputController {
     } else if (ev.button === 0) {
       this.app.isDrawing = true;
       const coords = this.getGridCoords(ev);
-      this.app.useActiveTool(coords, "down");
+      this.app.useActiveTool(coords, PointerEventType.Down);
     }
   }
 
-  onMouseMove(ev) {
+  onMouseMove(ev: PointerEvent) {
     const rect = this.canvas.getBoundingClientRect();
 
     const localX = ev.clientX - rect.left;
     const localY = ev.clientY - rect.top;
 
     // Clamp mouse positions to ruler track bounds
-    const ruler = this.app.renderer.rulerRenderer;
+    const ruler = this.app.renderer.rulerOverlayRenderer;
     const minBound = ruler.size + ruler.mouseIndicatorThickness;
     const maxLocalX = rect.width - ruler.mouseIndicatorThickness;
     const maxLocalY = rect.height - ruler.mouseIndicatorThickness;
@@ -96,14 +103,14 @@ export default class InputController {
 
       this.lastMouse = { x: ev.clientX, y: ev.clientY };
     } else if (this.app.isDrawing) {
-      this.app.useActiveTool(coords, "move");
+      this.app.useActiveTool(coords, PointerEventType.Move);
     }
   }
 
-  onMouseUp(ev) {
+  onMouseUp(ev: PointerEvent) {
     if (this.app.isDrawing) {
       const coords = this.getGridCoords(ev);
-      this.app.useActiveTool(coords, "up");
+      this.app.useActiveTool(coords, PointerEventType.Up);
       this.app.isDrawing = false;
     } else if (this.app.isPanning) {
       this.app.isPanning = false;
@@ -113,14 +120,14 @@ export default class InputController {
     this.viewport.classList.remove("panning");
   }
 
-  onWheel(e) {
-    e.preventDefault();
-    const zoomFactor = e.deltaY < 0 ? 1.15 : 0.85;
+  onWheel(ev: WheelEvent) {
+    ev.preventDefault();
+    const zoomFactor = ev.deltaY < 0 ? 1.15 : 0.85;
     const rect = this.canvas.getBoundingClientRect();
 
     this.app.camera.calculateZoom(
-      e.clientX,
-      e.clientY,
+      ev.clientX,
+      ev.clientY,
       zoomFactor,
       rect,
       this.app.document.width,

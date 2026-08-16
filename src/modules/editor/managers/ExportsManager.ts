@@ -1,10 +1,8 @@
-import ColorUtils from "../../utils/ColorUtils.js";
+import type PixelDocument from "../core/PixelDocument";
+import ColorUtils from "../../utils/ColorUtils";
 
 export default class ExportsManager {
-  /**
-   * @param {import("../core/PixelDocument.js").default} document 
-   */
-  exportPNG(document) {
+  exportPNG(document: PixelDocument) {
     const { canvas, context } = this.createOffscreenCanvas();
 
     canvas.width = document.width;
@@ -30,21 +28,14 @@ export default class ExportsManager {
     this.startDownload(canvas, document.width, document.height);
   }
 
-  /** @private */
-  createOffscreenCanvas() {
+  private createOffscreenCanvas() {
     const canvas = document.createElement("canvas");
-    const context = canvas.getContext("2d");
+    const context = canvas.getContext("2d")!;
 
     return { canvas, context };
   }
 
-  /** 
-   * @private
-   * @param {HTMLCanvasElement} canvas
-   * @param {number} width
-   * @param {number} height
-   */
-  startDownload(canvas, width, height) {
+  private startDownload(canvas: HTMLCanvasElement, width: number, height: number) {
     const link = document.createElement("a");
     link.download = `pixel-asset-${width}x${height}.png`;
     link.href = canvas.toDataURL("image/png");

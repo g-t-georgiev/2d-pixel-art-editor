@@ -1,46 +1,45 @@
-import BackgroundRenderer from "./BackgroundRenderer.js";
-import DocumentRenderer from "./DocumentRenderer.js";
-import GridOverlayRenderer from "./GridOverlayRenderer.js";
-import RulersOverlayRenderer from "./RulersOverlayRenderer.js";
-import CursorOverlayRenderer from "./CursorOverlayRenderer.js";
-
-/** @typedef {import("../Application.js").default} Application */
-/** @typedef {import("../Camera.js").default} Camera */
+import type Application from "../Application";
+import type Camera from "../Camera";
+import BackgroundRenderer from "./BackgroundRenderer";
+import DocumentRenderer from "./DocumentRenderer";
+import GridOverlayRenderer from "./GridOverlayRenderer";
+import RulersOverlayRenderer from "./RulersOverlayRenderer";
+import CursorOverlayRenderer from "./CursorOverlayRenderer";
 
 export default class CanvasRenderer {
-  /**
-   * @param {Application} app
-   * @param {HTMLCanvasElement} canvas 
-   * @param {Camera} camera 
-   * @param {number} rulerSize 
-   */
-  constructor(app, canvas, camera, rulerSize = 24) {
-    /** @type Application */
-    this.app = app;
-    /** @type HTMLCanvasElement */
-    this.canvas = canvas;
-    this.context = canvas.getContext("2d");
-    /** @type Camera */
-    this.camera = camera;
+  private context: CanvasRenderingContext2D;
+
+  readonly backgroundRenderer!: BackgroundRenderer;
+  readonly documentRenderer!: DocumentRenderer;
+  readonly gridOverlayRenderer!: GridOverlayRenderer;
+  readonly rulerOverlayRenderer!: RulersOverlayRenderer;
+  readonly cursorOverlayRenderer!: CursorOverlayRenderer;
+
+  constructor(
+    public app: Application,
+    private canvas: HTMLCanvasElement,
+    private camera: Camera,
+    rulerSize = 24
+  ) {
+    this.context = canvas.getContext("2d")!;
 
     // Sub-renderers
     this.backgroundRenderer = new BackgroundRenderer(this.context);
-    this.docRenderer = new DocumentRenderer(this.context, camera);
-    this.gridRenderer = new GridOverlayRenderer(this.context, camera);
-    this.rulerRenderer = new RulersOverlayRenderer(this.context, camera, rulerSize);
-    this.cursorRenderer = new CursorOverlayRenderer(this.context, camera);
+    this.documentRenderer = new DocumentRenderer(this.context, camera);
+    this.gridOverlayRenderer = new GridOverlayRenderer(this.context, camera);
+    this.rulerOverlayRenderer = new RulersOverlayRenderer(this.context, camera, rulerSize);
+    this.cursorOverlayRenderer = new CursorOverlayRenderer(this.context, camera);
   }
 
   get showGrid() {
-    return this.gridRenderer.showGrid;
+    return this.gridOverlayRenderer.showGrid;
   }
 
   set showGrid(value) {
-    this.gridRenderer.showGrid = value;
+    this.gridOverlayRenderer.showGrid = value;
   }
 
-  /** @param {{ x: number; y: number; }} mouseScreenPos */
-  render(mouseScreenPos = { x: -1, y: -1 }) {
+  render(mouseScreenPos: { x: number; y: number; } = { x: -1, y: -1 }) {
     const DPR = this.app.devicePixelRatio;
     const { document, isDrawing, tools, penSize, currentColor } = this.app;
 
@@ -61,8 +60,8 @@ export default class CanvasRenderer {
     this.context.scale(this.camera.zoom, this.camera.zoom);
 
     this.backgroundRenderer.render(this.app.document.width, this.app.document.height);
-    this.docRenderer.render(this.app.document);
-    this.gridRenderer.render(this.app.document);
+    this.documentRenderer.render(this.app.document);
+    this.gridOverlayRenderer.render(this.app.document);
 
     if (!isDrawing) {
       // Render Hover Preview overlay (calculates grid coordinates from screen position)
@@ -74,13 +73,13 @@ export default class CanvasRenderer {
       );
       const gridCoords = this.camera.worldToGrid(worldX, worldY);
       const activeToolName = tools.getActiveTool()?.name;
-      this.cursorRenderer.render(document, gridCoords, activeToolName, penSize, currentColor);
+      this.cursorOverlayRenderer.render(document, gridCoords, activeToolName, penSize, currentColor);
     }
 
     this.context.restore(); // Exit camera space, back to CSS screen space
 
     // UI Overlays
-    this.rulerRenderer.render(
+    this.rulerOverlayRenderer.render(
       this.app.canvasWidthInCSSPixels,
       this.app.canvasHeightInCSSPixels,
       mouseScreenPos

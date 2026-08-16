@@ -1,24 +1,33 @@
-export default class RulersOverlayRenderer {
-  constructor(context, camera, size = 24, mouseIndicatorThickness = 2) {
-    /** @type CanvasRenderingContext2D */
-    this.ctx = context;
-    this.camera = camera;
-    this.size = size;
-    this.mouseIndicatorThickness = mouseIndicatorThickness;
+import type Camera from "../Camera";
 
-    this.style = {
-      barColor: "#23262d",
-      labelColor: "#9fa6ae",
-      dividerColor: "#9fa6ae",
-      highlightColor: "#66fffb",
-      cornerColor: "#363940",
-      majorLength: 10,
-      middleLength: 16,
-      minorLength: 20
-    };
+export default class RulersOverlayRenderer {
+  private readonly style = {
+    barColor: "#23262d",
+    labelColor: "#9fa6ae",
+    dividerColor: "#9fa6ae",
+    highlightColor: "#66fffb",
+    cornerColor: "#363940",
+    majorLength: 10,
+    middleLength: 16,
+    minorLength: 20
+  } as const;
+
+  constructor(
+    private context: CanvasRenderingContext2D,
+    private camera: Camera,
+    private _size = 24,
+    private _mouseIndicatorThickness = 2
+  ) { }
+
+  get size() {
+    return this._size;
   }
 
-  getNiceStep(rawStep) {
+  get mouseIndicatorThickness() {
+    return this._mouseIndicatorThickness;
+  }
+
+  getNiceStep(rawStep: number) {
     const exponent = Math.floor(Math.log10(rawStep));
     const fraction = rawStep / Math.pow(10, exponent);
     let niceFraction = 10;
@@ -31,10 +40,14 @@ export default class RulersOverlayRenderer {
     return Math.max(1, niceFraction * Math.pow(10, exponent));
   }
 
-  render(canvasWidth, canvasHeight, mouseScreenPos) {
-    this.ctx.save();
-    this.ctx.font = "12px sans-serif";
-    this.ctx.lineWidth = 1;
+  render(
+    canvasWidth: number,
+    canvasHeight: number,
+    mouseScreenPos: { x: number; y: number; }
+  ) {
+    this.context.save();
+    this.context.font = "12px sans-serif";
+    this.context.lineWidth = 1;
 
     const minPixelSpacing = 53;
     const step = this.getNiceStep(minPixelSpacing / this.camera.zoom);
@@ -45,12 +58,17 @@ export default class RulersOverlayRenderer {
     this.drawMouseIndicators(mouseScreenPos);
     this.drawCornerBox(canvasWidth, canvasHeight);
 
-    this.ctx.restore();
+    this.context.restore();
   }
 
-  drawRulerAxis(length, cameraOffset, subStep, isVertical) {
-    const size = this.size;
-    const ctx = this.ctx;
+  drawRulerAxis(
+    length: number,
+    cameraOffset: number,
+    subStep: number,
+    isVertical = false
+  ) {
+    const size = this._size;
+    const ctx = this.context;
     const zoom = this.camera.zoom;
 
     ctx.fillStyle = this.style.barColor;
@@ -108,11 +126,11 @@ export default class RulersOverlayRenderer {
     ctx.stroke();
   }
 
-  drawMouseIndicators({ x, y }) {
-    const size = this.size;
-    const ctx = this.ctx;
+  drawMouseIndicators({ x, y }: { x: number; y: number; }) {
+    const size = this._size;
+    const ctx = this.context;
 
-    ctx.lineWidth = this.mouseIndicatorThickness;
+    ctx.lineWidth = this._mouseIndicatorThickness;
     ctx.strokeStyle = this.style.highlightColor;
     ctx.beginPath();
 
@@ -128,9 +146,9 @@ export default class RulersOverlayRenderer {
     ctx.stroke();
   }
 
-  drawCornerBox(width, height) {
-    const size = this.size;
-    const ctx = this.ctx;
+  drawCornerBox(width: number, height: number) {
+    const size = this._size;
+    const ctx = this.context;
 
     ctx.fillStyle = this.style.cornerColor;
     ctx.fillRect(0, 0, size, size);

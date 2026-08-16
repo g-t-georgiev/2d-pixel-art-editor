@@ -1,12 +1,12 @@
-import Tool from "./Tool.js";
-import { GlobalEmitter } from "../utils/EventEmitter.js";
+import Tool, { type ToolContext } from "./Tool";
+import { GlobalEmitter } from "../utils/EventEmitter";
 
 export default class EyedropperTool extends Tool {
   constructor() {
     super("eyedropper");
   }
 
-  onMouseDown({ x, y }, { document }) {
+  onMouseDown({ x, y }: { x: number; y: number; }, { document }: ToolContext) {
     const color = document.getPixelData(x, y);
 
     if (!color) return;
