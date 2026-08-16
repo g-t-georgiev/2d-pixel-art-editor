@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="./src/styles/main.css">
-  <script type="module" src="./src/js/main.js"></script>
+  <script type="module" src="./src/modules/main.js"></script>
   <title>Pixel Art Creator</title>
 </head>
 
@@ -77,6 +77,16 @@
   <!-- Main Viewport containing display canvas -->
   <div class="viewport" id="viewport">
     <canvas id="paintCanvas"></canvas>
+
+    <!-- NEW: Floating HUD -->
+    <layers-panel class="floating-panel">
+      <!--
+        Internally, this component will render:
+          - A draggable header (collapsible)
+          - A "+" button
+          - A list of <layer-item> components
+      -->
+    </layers-panel>
   </div>
 
   <!-- Status Bar -->

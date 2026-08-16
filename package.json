@@ -1,0 +1,21 @@
+{
+  "name": "2d-pixel-art-editor",
+  "version": "1.0.0",
+  "description": "The application is divided into the following directories and corresponding components:",
+  "main": "./src/modules/main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/g-t-georgiev/2d-pixel-art-editor.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/g-t-georgiev/2d-pixel-art-editor/issues"
+  },
+  "homepage": "https://github.com/g-t-georgiev/2d-pixel-art-editor#readme"
+}

@@ -6,7 +6,7 @@ export default class BucketTool extends Tool {
     super("bucket");
   }
 
-  onMouseDown({ x, y }, editor) {
-    FloodFill.execute(editor.document, x, y, editor.currentColor);
+  onMouseDown({ x, y }, { document, color }) {
+    FloodFill.execute(document, x, y, color);
   }
 }

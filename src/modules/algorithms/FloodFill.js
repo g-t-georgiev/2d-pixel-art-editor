@@ -2,7 +2,7 @@ export default class FloodFill {
   static execute(document, startX, startY, targetColor) {
     if (!document.isWithinBounds(startX, startY)) return;
 
-    const originalColor = document.getPixel(startX, startY);
+    const originalColor = document.getPixelData(startX, startY);
     if (originalColor === targetColor) return;
 
     const stack = [[startX, startY]];
@@ -11,14 +11,16 @@ export default class FloodFill {
       const [x, y] = stack.pop();
 
       if (document.isWithinBounds(x, y)) {
-        if (document.getPixel(x, y) === originalColor) {
-          document.setPixel(x, y, targetColor);
+        const isTheSameColor = document.getPixelData(x, y) === originalColor;
 
-          stack.push([x + 1, y]);
-          stack.push([x - 1, y]);
-          stack.push([x, y + 1]);
-          stack.push([x, y - 1]);
-        }
+        if (!isTheSameColor) continue;
+
+        document.setPixelData(x, y, targetColor);
+
+        stack.push([x + 1, y]);
+        stack.push([x - 1, y]);
+        stack.push([x, y + 1]);
+        stack.push([x, y - 1]);
       }
     }
   }

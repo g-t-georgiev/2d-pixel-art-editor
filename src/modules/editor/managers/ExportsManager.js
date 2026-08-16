@@ -1,10 +1,8 @@
-import ColorUtils from "../utils/ColorUtils.js";
-
-/** @typedef {import("./PixelDocument.js").default} Document */
+import ColorUtils from "../../utils/ColorUtils.js";
 
 export default class ExportsManager {
   /**
-   * @param {Document} document 
+   * @param {import("../core/PixelDocument.js").default} document 
    */
   exportPNG(document) {
     const { canvas, context } = this.createOffscreenCanvas();
@@ -16,7 +14,7 @@ export default class ExportsManager {
 
     for (let y = 0; y < document.height; y++) {
       for (let x = 0; x < document.width; x++) {
-        const color = document.getPixel(x, y);
+        const color = document.getPixelData(x, y);
         const i = (y * document.width + x) * 4;
         const rgba = ColorUtils.hexToRgba(color);
 
