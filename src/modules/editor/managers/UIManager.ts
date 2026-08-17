@@ -75,6 +75,13 @@ export default class UIManager {
     colorSwatches.forEach((swatch) => {
       swatch.addEventListener("click", () => {
         const color = swatch.dataset.color;
+
+        if (!color) {
+          console.warn(`Invalid color format. Expected valid CSS color format, got ${color}`);
+
+          return;
+        }
+
         this.app.setColor(color);
       });
     });

@@ -1,7 +1,9 @@
+import type { color } from "../../types";
+
 export default class PixelDocumentLayer {
   visible: boolean = true;
   opacity: number = 1;
-  grid: Array<string | null>;
+  grid: Array<color>;
 
   constructor(
     readonly id: string,
@@ -22,7 +24,7 @@ export default class PixelDocumentLayer {
     return this.grid[y * this.width + x] ?? null;
   }
 
-  setPixelData(x: number, y: number, color: string | null) {
+  setPixelData(x: number, y: number, color: color) {
     if (!this.isWithinBounds(x, y) || !this.visible) return;
 
     this.grid[y * this.width + x] = color;

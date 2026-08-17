@@ -1,3 +1,4 @@
+import type { color } from "../types";
 import { GlobalEmitter } from "../utils/EventEmitter";
 import PixelDocument from "./core/PixelDocument";
 import Camera from "./Camera";
@@ -9,7 +10,7 @@ import ExportsManager from "./managers/ExportsManager";
 
 export default class Application {
   penSize = 1;
-  currentColor = "#ffee00";
+  currentColor: color = "#ffee00";
 
   isDrawing = false;
   isPanning = false;
@@ -114,13 +115,18 @@ export default class Application {
     this.tools.setActiveTool(name);
   }
 
-  setColor(color: string) {
-    this.ui.updateColorUI(color);
+  setColor(color: color) {
     this.currentColor = color;
+
+    /**
+     * Because "null" value represents empty/transparent color, but we can't pass null as a valid color
+     * value for the color picker widget, we should convert it to a valid transparent CSS color.
+     */
+    const normalizedColor = color ?? "transparent"
+    this.ui.updateColorUI(normalizedColor);
   }
 
   useActiveTool(coords: { x: number; y: number; }, action: PointerEventType) {
-    // Delegation: ToolManager figures out the arguments now
     this.tools.applyActiveTool(action, coords);
   }
 
