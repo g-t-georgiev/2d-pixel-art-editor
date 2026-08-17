@@ -122,7 +122,7 @@ export default class Application {
      * Because "null" value represents empty/transparent color, but we can't pass null as a valid color
      * value for the color picker widget, we should convert it to a valid transparent CSS color.
      */
-    const normalizedColor = color ?? "transparent"
+    const normalizedColor = color ?? "#ffffff00";
     this.ui.updateColorUI(normalizedColor);
   }
 
