@@ -26,6 +26,7 @@
     "vite": "^8.2.1"
   },
   "dependencies": {
-    "color-picker": "file:../color-picker"
+    "color-picker": "file:../color-picker",
+    "schema-store": "file:../../Playground/schema-store"
   }
 }
