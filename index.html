@@ -15,7 +15,7 @@
   <div class="toolbar">
     <!-- Grid Dimensions Preset -->
     <div class="tool-group">
-      <label>Grid Size</label>
+      <label for="gridSizeSelect" class="label">Grid Size</label>
       <select id="gridSizeSelect">
         <option value="8x8">8 x 8</option>
         <option value="16x16" selected>16 x 16</option>
@@ -34,7 +34,7 @@
 
     <!-- Brush Size Control -->
     <div class="tool-group">
-      <label>Pen Size</label>
+      <label for="penSizeSelect" class="label">Pen Size</label>
       <select id="penSizeSelect">
         <option value="1" selected>1 px</option>
         <option value="2">2 px</option>
@@ -45,8 +45,8 @@
 
     <!-- Active Color & Presets -->
     <div class="tool-group">
-      <label>Color</label>
-      <input type="color" id="colorPicker" value="#ffee00">
+      <span class="label">Color</span>
+      <color-picker-button class="color-picker" id="colorPicker" value="#ffee00"></color-picker-button>
       <div class="palette">
         <!-- Classic Arcade Preset Swatches -->
         <div class="palette-swatch" style="background:#ffee00" data-color="#ffee00"></div>
@@ -64,7 +64,7 @@
     <div class="tool-group">
       <button id="btnZoomOut">-</button> 🔍 <button id="btnZoomIn">+</button>
       <button id="btnZoomReset">Reset Zoom</button>
-      <label><input type="checkbox" id="toggleGrid" checked> Grid Lines</label>
+      <label class="label"><input type="checkbox" id="toggleGrid" checked> Grid Lines</label>
     </div>
 
     <!-- Actions -->
