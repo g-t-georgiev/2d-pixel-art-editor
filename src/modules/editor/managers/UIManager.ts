@@ -1,10 +1,11 @@
 import type Application from "../Application";
 import type { ToolType } from "../../tools/ToolManager";
+import type { ColorChangeEventShape, ColorPickerButton } from "color-picker";
 
 const Elements = {
   gridSizeSelect: document.getElementById("gridSizeSelect"),
   penSizeSelect: document.getElementById("penSizeSelect"),
-  colorPicker: document.getElementById("colorPicker"),
+  colorPicker: document.querySelector<ColorPickerButton>("#colorPicker"),
   toggleGrid: document.getElementById("toggleGrid"),
   coordsDisplay: document.getElementById("coordsDisplay"),
   zoomDisplay: document.getElementById("zoomDisplay"),
@@ -52,10 +53,11 @@ export default class UIManager {
     });
 
     // Inputs
-    colorPicker?.addEventListener("input", (ev: InputEvent) => {
-      const target = ev.target as HTMLInputElement;
-      this.app.currentColor = target.value;
-    });
+    colorPicker?.addEventListener("color-changed", ((ev: CustomEvent<ColorChangeEventShape>) => {
+      console.log("ColorChangeEvent", ev.detail);
+      const value = ev.detail.hex;
+      this.app.currentColor = value;
+    }) as EventListener);
     penSizeSelect?.addEventListener("change", (ev) => {
       const target = ev.target as HTMLInputElement;
       this.app.penSize = parseInt(target.value, 10);
@@ -75,6 +77,13 @@ export default class UIManager {
     colorSwatches.forEach((swatch) => {
       swatch.addEventListener("click", () => {
         const color = swatch.dataset.color;
+
+        if (!color) {
+          console.warn(`Invalid color format. Expected valid CSS color format, got ${color}`);
+
+          return;
+        }
+
         this.app.setColor(color);
       });
     });
@@ -108,9 +117,7 @@ export default class UIManager {
   updateColorUI(color: string) {
     if (!this.elements.colorPicker) return;
 
-    const colorPicker = this.elements.colorPicker as HTMLInputElement;
-
-    colorPicker.value = color;
+    this.elements.colorPicker.setAttribute("value", color);
   }
 
   updateStatus(coords: { x: number; y: number; }, zoom: number) {

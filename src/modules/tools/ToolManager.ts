@@ -1,4 +1,5 @@
 import type Application from "../editor/Application";
+import type { ITool } from "./Tool";
 import { PointerEventType } from "../editor/controllers/InputController";
 import { PenTool, EraserTool, BucketTool, EyedropperTool } from "./index";
 
@@ -46,7 +47,7 @@ export default class ToolManager {
     this.app.setTool(this.previousTool);
   }
 
-  getActiveTool() {
+  getActiveTool(): ITool {
     return this.tools[this.activeTool];
   }
 
@@ -70,8 +71,6 @@ export default class ToolManager {
     const actionLabel = (action[0].toUpperCase() + action.slice(1)) as Capitalize<typeof action>;
     const methodName = `onMouse${actionLabel}` as const;
 
-    if (typeof tool[methodName] === "function") {
-      tool[methodName](coords, context);
-    }
+    tool[methodName]?.(coords, context);
   }
 }
