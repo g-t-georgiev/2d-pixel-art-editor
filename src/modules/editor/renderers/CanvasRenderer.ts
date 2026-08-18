@@ -44,9 +44,9 @@ export default class CanvasRenderer {
     const { document, isDrawing, tools, penSize, currentColor } = this.app;
 
     // Disable pixel smoothing for crisp pixel art rendering
-    this.context.imageSmoothingEnabled = false;
+    if (this.context.imageSmoothingEnabled) this.context.imageSmoothingEnabled = false;
 
-    // Clear workspace buffer in raw pixels
+    // Clear workspace buffer
     this.context.fillStyle = "#33353d";
     this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
@@ -64,7 +64,7 @@ export default class CanvasRenderer {
     this.gridOverlayRenderer.render(this.app.document);
 
     if (!isDrawing) {
-      // Render Hover Preview overlay (calculates grid coordinates from screen position)
+      // Hover Preview overlay
       const rect = this.canvas.getBoundingClientRect();
       const { worldX, worldY } = this.camera.screenToWorld(
         mouseScreenPos.x + rect.left,

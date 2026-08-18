@@ -1,8 +1,9 @@
+import type { color } from "../../types";
 import PixelDocumentLayer from "./PixelDocumentLayer";
 
 export default class PixelDocument {
   layers: PixelDocumentLayer[] = [];
-  activeLayerId: string | null = null;
+  activeLayerId: color = null;
   layerIdCounter: number = 0;
 
   constructor(
@@ -94,7 +95,7 @@ export default class PixelDocument {
     return layer.getPixelData(x, y);
   }
 
-  setPixelData(x: number, y: number, color: string | null, layerId = this.activeLayerId) {
+  setPixelData(x: number, y: number, color: color, layerId = this.activeLayerId) {
     if (!layerId) return;
 
     const layer = this.getLayer(layerId);

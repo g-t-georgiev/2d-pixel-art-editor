@@ -1,3 +1,4 @@
+import type { color } from "../types";
 import type PixelDocument from "../editor/core/PixelDocument";
 
 export default class FloodFill {
@@ -5,7 +6,7 @@ export default class FloodFill {
     document: PixelDocument,
     startX: number,
     startY: number,
-    targetColor: string
+    targetColor: color
   ) {
     if (!document.isWithinBounds(startX, startY)) return;
 
