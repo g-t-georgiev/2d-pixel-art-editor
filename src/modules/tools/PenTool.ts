@@ -1,4 +1,5 @@
-import Tool, { type ToolContext } from "./Tool";
+import type { ToolContext } from "./types";
+import Tool from "./Tool";
 import MathUtils from "../utils/MathUtils";
 
 export default class PenTool extends Tool {

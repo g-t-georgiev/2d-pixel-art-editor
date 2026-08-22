@@ -1,4 +1,4 @@
-import type { AppEvents } from "../types";
+import type { ApplicationEventsMap } from "../types";
 
 // Make the EventEmitter generic
 export default class EventEmitter<Events extends Record<string, (...args: any[]) => any>> {
@@ -50,4 +50,4 @@ export default class EventEmitter<Events extends Record<string, (...args: any[])
   }
 }
 
-export const GlobalEmitter = new EventEmitter<AppEvents>();
+export const GlobalEmitter = new EventEmitter<ApplicationEventsMap>();
