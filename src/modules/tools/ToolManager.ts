@@ -1,21 +1,11 @@
 import type Application from "../editor/Application";
-import type { ITool } from "./Tool";
+import type { ITool, Tools, ToolType } from "./types";
 import { PointerEventType } from "../editor/controllers/InputController";
-import { PenTool, EraserTool, BucketTool, EyedropperTool } from "./index";
-
-export type Tools = {
-  pen: PenTool;
-  eraser: EraserTool;
-  bucket: BucketTool;
-  eyedropper: EyedropperTool;
-}
-
-export type ToolType = keyof Tools;
-
+import { PenTool, EraserTool, BucketTool, EyeDropperTool } from "./index";
 
 export default class ToolManager {
-  private activeTool: ToolType = "pen";
-  private previousTool: ToolType = this.activeTool;
+  private currentTool: ToolType = "pen";
+  private previousTool: ToolType = this.currentTool;
 
   tools: Tools;
 
@@ -24,7 +14,7 @@ export default class ToolManager {
       pen: new PenTool(),
       eraser: new EraserTool(),
       bucket: new BucketTool(),
-      eyedropper: new EyedropperTool()
+      eyedropper: new EyeDropperTool()
     };
   }
 
@@ -32,23 +22,23 @@ export default class ToolManager {
     if (!Object.prototype.hasOwnProperty.call(this.tools, type))
       console.warn(`No tool with name "${type}" was found.`);
 
-    if (this.activeTool === type) return;
+    if (this.currentTool === type) return;
 
-    if (this.activeTool !== "eyedropper") {
-      this.previousTool = this.activeTool;
+    if (this.currentTool !== "eyedropper") {
+      this.previousTool = this.currentTool;
     }
 
-    this.activeTool = type;
+    this.currentTool = type;
   }
 
   trySwitchToPrevTool() {
-    if (!this.previousTool || this.previousTool === this.activeTool) return;
+    if (!this.previousTool || this.previousTool === this.currentTool) return;
 
     this.app.setTool(this.previousTool);
   }
 
   getActiveTool(): ITool {
-    return this.tools[this.activeTool];
+    return this.tools[this.currentTool];
   }
 
   /** Evaluates the active tool and passes a strictly defined context. */

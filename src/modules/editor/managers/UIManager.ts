@@ -1,6 +1,8 @@
 import type Application from "../Application";
-import type { ToolType } from "../../tools/ToolManager";
+import type { ToolType } from "../../tools/types";
 import type { ColorChangeEventShape, ColorPickerButton } from "color-picker";
+import { applicationStore, ApplicationStateActions } from "../../store";
+import { color } from "../../types";
 
 const Elements = {
   gridSizeSelect: document.getElementById("gridSizeSelect"),
@@ -25,7 +27,10 @@ const Elements = {
 export default class UIManager {
   elements = Elements;
 
-  constructor(private app: Application) {
+  constructor(
+    private app: Application,
+    private store: typeof applicationStore
+  ) {
     this.bindEvents();
   }
 
@@ -47,29 +52,31 @@ export default class UIManager {
     const toolBtnKeys = Object.keys(tools) as ToolType[];
     toolBtnKeys.forEach((name) => {
       const toolBtn = tools[name];
-      toolBtn?.addEventListener("click", () => {
-        this.app.setTool(name);
-      });
+      toolBtn?.addEventListener("click", () =>
+        this.store.dispatch(ApplicationStateActions.SetTool, name)
+      );
     });
 
     // Inputs
     colorPicker?.addEventListener("color-changed", ((ev: CustomEvent<ColorChangeEventShape>) => {
-      console.log("ColorChangeEvent", ev.detail);
-      const value = ev.detail.hex;
-      this.app.currentColor = value;
+      this.store.dispatch(
+        ApplicationStateActions.SetColor,
+        { color: ev.detail.hex, updateUi: false }
+      )
     }) as EventListener);
     penSizeSelect?.addEventListener("change", (ev) => {
       const target = ev.target as HTMLInputElement;
-      this.app.penSize = parseInt(target.value, 10);
+      const value = parseInt(target.value, 10);
+      this.store.dispatch(ApplicationStateActions.EditPen, { size: value });
     });
     gridSizeSelect?.addEventListener("change", (ev) => {
       const target = ev.target as HTMLInputElement;
       const [w, h] = target.value.split("x").map(Number);
-      this.app.resizeDocument(w, h);
+      this.store.dispatch(ApplicationStateActions.ResizeDocument, { width: w, height: h });
     });
     toggleGrid?.addEventListener("change", (ev) => {
       const target = ev.target as HTMLInputElement;
-      this.app.renderer.showGrid = target.checked;
+      this.store.dispatch(ApplicationStateActions.ToggleGrid, { enabled: target.checked });
     });
 
     // Palette Swatches
@@ -84,7 +91,10 @@ export default class UIManager {
           return;
         }
 
-        this.app.setColor(color);
+        this.store.dispatch(
+          ApplicationStateActions.SetColor,
+          { color, updateUi: true }
+        );
       });
     });
 
@@ -114,8 +124,12 @@ export default class UIManager {
     activeToolBtns.forEach(([_, button]) => button?.classList.remove("active"));
   }
 
-  updateColorUI(color: string) {
+  updateColorUI(color: color) {
     if (!this.elements.colorPicker) return;
+
+    // Because "null" value represents empty/transparent color, but we can't pass null as a color
+    // value for the color picker widget, we should convert it to a transparent CSS color.
+    color ??= "rgba(0, 0, 0, 0)";
 
     this.elements.colorPicker.setAttribute("value", color);
   }

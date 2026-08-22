@@ -1,12 +1,14 @@
-import type { color } from "../types";
+import { ApplicationEventTypes, type color } from "../types";
+import type { ToolType } from "../tools/types";
 import { GlobalEmitter } from "../utils/EventEmitter";
 import PixelDocument from "./core/PixelDocument";
 import Camera from "./Camera";
 import CanvasRenderer from "./renderers/CanvasRenderer";
 import InputController, { PointerEventType } from "./controllers/InputController";
 import UIManager from "./managers/UIManager";
-import ToolManager, { ToolType } from "../tools/ToolManager";
+import ToolManager from "../tools/ToolManager";
 import ExportsManager from "./managers/ExportsManager";
+import { ApplicationStateActions, applicationStore } from "../store";
 
 export default class Application {
   penSize = 1;
@@ -35,7 +37,7 @@ export default class Application {
     this.document = new PixelDocument(16, 16);
 
     this.tools = new ToolManager(this);
-    this.ui = new UIManager(this);
+    this.ui = new UIManager(this, applicationStore);
     this.input = new InputController(this, this.canvas, this.canvasContainer);
 
     this.exports = new ExportsManager();
@@ -43,6 +45,7 @@ export default class Application {
     this.renderLoop = this.renderLoop.bind(this);
 
     this.attachCustomEventListeners();
+    this.attachStateSubscriptions();
     this.setupResizeObserver();
     this.startLoop();
   }
@@ -60,12 +63,39 @@ export default class Application {
   }
 
   attachCustomEventListeners() {
-    this.events.on("eyedropper:color:picked", ({ color, trySwitchTool }) => {
-      this.setColor(color);
+    this.events.on(ApplicationEventTypes.PickColor, ({ color, trySwitchTool }) => {
+      applicationStore.dispatch(ApplicationStateActions.SetColor, { color, updateUi: true });
 
       if (!trySwitchTool) return;
 
       this.tools.trySwitchToPrevTool();
+    });
+  }
+
+  attachStateSubscriptions() {
+    applicationStore.select(
+      (state) => state.currentTool,
+      (tool) => this.setTool(tool)
+    );
+
+    applicationStore.select(
+      (state) => state.penSize,
+      (size) => this.penSize = size
+    );
+
+    applicationStore.select(
+      (state) => state.preferences.grid,
+      (grid) => this.renderer.showGrid = grid.enabled
+    );
+
+    applicationStore.select(
+      (state) => state.document.size,
+      ({ width, height }) => this.resizeDocument(width, height)
+    );
+
+    applicationStore.on(ApplicationStateActions.SetColor, (event) => {
+      const { color, updateUi } = event.payload;
+      this.setColor(color, updateUi);
     });
   }
 
@@ -115,15 +145,12 @@ export default class Application {
     this.tools.setActiveTool(name);
   }
 
-  setColor(color: color) {
+  setColor(color: color, updateUi: boolean) {
     this.currentColor = color;
 
-    /**
-     * Because "null" value represents empty/transparent color, but we can't pass null as a valid color
-     * value for the color picker widget, we should convert it to a valid transparent CSS color.
-     */
-    const normalizedColor = color ?? "rgba(0, 0, 0, 0)";
-    this.ui.updateColorUI(normalizedColor);
+    if (!updateUi) return;
+
+    this.ui.updateColorUI(color);
   }
 
   useActiveTool(coords: { x: number; y: number; }, action: PointerEventType) {
