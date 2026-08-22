@@ -1,8 +1,11 @@
 export type color = string | null;
 
-// Define your Event Map
-// This acts as the single source of truth for all events and their payloads.
-export type AppEvents = {
-  "eyedropper:color:picked": (payload: { color: color; trySwitchTool: boolean }) => void;
-  // Add other events here...
+export enum ApplicationEventTypes {
+  PickColor = "eyedropper:color:picked",
+  // Declare event types here...
+};
+
+export type ApplicationEventsMap = {
+  [ApplicationEventTypes.PickColor]: (payload: { color: color; trySwitchTool: boolean }) => void;
+  // Declare callback shapes for events...
 };

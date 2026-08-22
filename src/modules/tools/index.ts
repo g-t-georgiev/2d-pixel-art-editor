@@ -1,6 +1,4 @@
-import PenTool from "./PenTool";
-import EraserTool from "./EraserTool";
-import BucketTool from "./BucketTool";
-import EyedropperTool from "./EyedropperTool";
-
-export { PenTool, EraserTool, BucketTool, EyedropperTool };
+export { default as PenTool } from "./PenTool";
+export { default as EraserTool } from "./EraserTool";
+export { default as BucketTool } from "./BucketTool";
+export { default as EyeDropperTool } from "./EyeDropperTool";
