@@ -33,12 +33,26 @@ export default class Application {
     this.canvasContainer = canvas.parentElement!;
 
     this.camera = new Camera();
-    this.renderer = new CanvasRenderer(this, this.canvas, this.camera);
     this.document = new PixelDocument(16, 16);
 
-    this.tools = new ToolManager(this);
-    this.ui = new UIManager(this, applicationStore);
-    this.input = new InputController(this, this.canvas, this.canvasContainer);
+    this.ui = new UIManager(this);
+    this.tools = new ToolManager(this, this.document);
+
+    this.renderer = new CanvasRenderer(
+      this,
+      this.document,
+      this.tools,
+      this.canvas,
+      this.camera
+    );
+
+    this.input = new InputController(
+      this,
+      this.camera,
+      this.renderer,
+      this.canvas,
+      this.canvasContainer
+    );
 
     this.exports = new ExportsManager();
 
@@ -185,6 +199,49 @@ export default class Application {
       centerY,
       factor,
       rect,
+      this.document.width,
+      this.document.height
+    );
+  }
+
+  updateCameraPos(dx?: number, dy?: number, clamp = true) {
+    if (!dx && !dy) return;
+
+    this.camera.moveBy(dx, dy);
+
+    if (!clamp) return;
+
+    this.camera.clamp(
+      this.canvasWidthInCSSPixels,
+      this.canvasHeightInCSSPixels,
+      this.document.width,
+      this.document.height
+    );
+  }
+
+  updateCameraZoom(
+    posX: number,
+    posY: number,
+    scrollY: number,
+    clamp = true
+  ) {
+    const zoomFactor = scrollY < 0 ? 1.15 : 0.85;
+    const rect = this.canvas.getBoundingClientRect();
+
+    this.camera.calculateZoom(
+      posX,
+      posY,
+      zoomFactor,
+      rect,
+      this.document.width,
+      this.document.height
+    );
+
+    if (!clamp) return;
+
+    this.camera.clamp(
+      this.canvasWidthInCSSPixels,
+      this.canvasHeightInCSSPixels,
       this.document.width,
       this.document.height
     );
