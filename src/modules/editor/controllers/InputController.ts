@@ -1,6 +1,7 @@
 import type Application from "../Application";
 import type Camera from "../Camera";
 import type CanvasRenderer from "../renderers/CanvasRenderer";
+import type ToolManager from "../../tools/ToolManager";
 import { ApplicationStateActions, applicationStore } from "../../store";
 
 export enum MouseButton {
@@ -23,6 +24,7 @@ export default class InputController {
 
   constructor(
     private app: Application,
+    private tools: ToolManager,
     private camera: Camera,
     private renderer: CanvasRenderer,
     private canvas: HTMLCanvasElement,
@@ -68,7 +70,7 @@ export default class InputController {
     } else if (ev.button === 0) {
       this.app.isDrawing = true;
       const coords = this.getGridCoords(ev);
-      this.app.useActiveTool(coords, PointerEventType.Down);
+      this.tools.applyActiveTool(PointerEventType.Down, coords);
     }
   }
 
@@ -99,14 +101,14 @@ export default class InputController {
       this.app.updateCameraPos(dx, dy);
       this.lastMouse = { x: ev.clientX, y: ev.clientY };
     } else if (this.app.isDrawing) {
-      this.app.useActiveTool(coords, PointerEventType.Move);
+      this.tools.applyActiveTool(PointerEventType.Move, coords);
     }
   }
 
   onMouseUp(ev: PointerEvent) {
     if (this.app.isDrawing) {
       const coords = this.getGridCoords(ev);
-      this.app.useActiveTool(coords, PointerEventType.Up);
+      this.tools.applyActiveTool(PointerEventType.Up, coords);
       this.app.isDrawing = false;
     } else if (this.app.isPanning) {
       this.app.isPanning = false;

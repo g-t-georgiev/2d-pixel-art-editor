@@ -15,7 +15,15 @@ export const setToolAction = defineAction<
 >(ApplicationStateActions.SetTool, {
   schema: setToolSchema,
   reducer(state, payload) {
+    const { currentTool } = state;
+
+    if (payload === currentTool) return;
+
     state.currentTool = payload;
+
+    if (currentTool === "eyedropper") return;
+
+    state.previousTool = currentTool;
   }
 });
 
