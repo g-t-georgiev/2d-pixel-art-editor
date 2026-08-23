@@ -1,4 +1,7 @@
 import type Application from "../Application";
+import type Camera from "../Camera";
+import type CanvasRenderer from "../renderers/CanvasRenderer";
+import { ApplicationStateActions, applicationStore } from "../../store";
 
 export enum MouseButton {
   Left,
@@ -20,6 +23,8 @@ export default class InputController {
 
   constructor(
     private app: Application,
+    private camera: Camera,
+    private renderer: CanvasRenderer,
     private canvas: HTMLCanvasElement,
     private viewport: HTMLElement
   ) {
@@ -36,7 +41,7 @@ export default class InputController {
     window.addEventListener("keydown", (ev) => {
       if (ev.key === "Alt" && !this.app.isQuickColorPicking) {
         this.app.isQuickColorPicking = true;
-        this.app.setTool("eyedropper");
+        applicationStore.dispatch(ApplicationStateActions.SetTool, "eyedropper");
       }
     });
 
@@ -49,9 +54,9 @@ export default class InputController {
 
   getGridCoords(ev: PointerEvent) {
     const rect = this.canvas.getBoundingClientRect();
-    const { worldX, worldY } = this.app.camera.screenToWorld(ev.clientX, ev.clientY, rect);
+    const { worldX, worldY } = this.camera.screenToWorld(ev.clientX, ev.clientY, rect);
 
-    return this.app.camera.worldToGrid(worldX, worldY);
+    return this.camera.worldToGrid(worldX, worldY);
   }
 
   onMouseDown(ev: PointerEvent) {
@@ -74,7 +79,7 @@ export default class InputController {
     const localY = ev.clientY - rect.top;
 
     // Clamp mouse positions to ruler track bounds
-    const ruler = this.app.renderer.rulerOverlayRenderer;
+    const ruler = this.renderer.rulerOverlayRenderer;
     const minBound = ruler.size + ruler.mouseIndicatorThickness;
     const maxLocalX = rect.width - ruler.mouseIndicatorThickness;
     const maxLocalY = rect.height - ruler.mouseIndicatorThickness;
@@ -91,16 +96,7 @@ export default class InputController {
       const dx = ev.clientX - this.lastMouse.x;
       const dy = ev.clientY - this.lastMouse.y;
 
-      this.app.camera.x += dx;
-      this.app.camera.y += dy;
-
-      this.app.camera.clamp(
-        this.app.canvasWidthInCSSPixels,
-        this.app.canvasHeightInCSSPixels,
-        this.app.document.width,
-        this.app.document.height
-      );
-
+      this.app.updateCameraPos(dx, dy);
       this.lastMouse = { x: ev.clientX, y: ev.clientY };
     } else if (this.app.isDrawing) {
       this.app.useActiveTool(coords, PointerEventType.Move);
@@ -122,23 +118,6 @@ export default class InputController {
 
   onWheel(ev: WheelEvent) {
     ev.preventDefault();
-    const zoomFactor = ev.deltaY < 0 ? 1.15 : 0.85;
-    const rect = this.canvas.getBoundingClientRect();
-
-    this.app.camera.calculateZoom(
-      ev.clientX,
-      ev.clientY,
-      zoomFactor,
-      rect,
-      this.app.document.width,
-      this.app.document.height
-    );
-
-    this.app.camera.clamp(
-      this.app.canvasWidthInCSSPixels,
-      this.app.canvasHeightInCSSPixels,
-      this.app.document.width,
-      this.app.document.height
-    );
+    this.app.updateCameraZoom(ev.clientX, ev.clientY, ev.deltaY);
   }
 }

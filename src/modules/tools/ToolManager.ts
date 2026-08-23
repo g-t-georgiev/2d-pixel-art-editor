@@ -1,7 +1,9 @@
 import type Application from "../editor/Application";
 import type { ITool, Tools, ToolType } from "./types";
+import type PixelDocument from "../editor/core/PixelDocument";
 import { PointerEventType } from "../editor/controllers/InputController";
 import { PenTool, EraserTool, BucketTool, EyeDropperTool } from "./index";
+import { ApplicationStateActions, applicationStore } from "../store";
 
 export default class ToolManager {
   private currentTool: ToolType = "pen";
@@ -9,7 +11,10 @@ export default class ToolManager {
 
   tools: Tools;
 
-  constructor(private app: Application) {
+  constructor(
+    private app: Application,
+    private document: PixelDocument
+  ) {
     this.tools = {
       pen: new PenTool(),
       eraser: new EraserTool(),
@@ -34,7 +39,7 @@ export default class ToolManager {
   trySwitchToPrevTool() {
     if (!this.previousTool || this.previousTool === this.currentTool) return;
 
-    this.app.setTool(this.previousTool);
+    applicationStore.dispatch(ApplicationStateActions.SetTool, this.previousTool);
   }
 
   getActiveTool(): ITool {
@@ -52,7 +57,7 @@ export default class ToolManager {
 
     // Create a standardized payload containing only what tools need to operate
     const context = {
-      document: this.app.document,
+      document: this.document,
       color: this.app.currentColor,
       size: this.app.penSize,
       isDrawing: this.app.isDrawing

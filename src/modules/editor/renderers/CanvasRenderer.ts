@@ -1,5 +1,7 @@
 import type Application from "../Application";
 import type Camera from "../Camera";
+import type PixelDocument from "../core/PixelDocument";
+import type ToolManager from "../../tools/ToolManager";
 import BackgroundRenderer from "./BackgroundRenderer";
 import DocumentRenderer from "./DocumentRenderer";
 import GridOverlayRenderer from "./GridOverlayRenderer";
@@ -17,6 +19,8 @@ export default class CanvasRenderer {
 
   constructor(
     public app: Application,
+    private document: PixelDocument,
+    private tools: ToolManager,
     private canvas: HTMLCanvasElement,
     private camera: Camera,
     rulerSize = 24
@@ -41,7 +45,13 @@ export default class CanvasRenderer {
 
   render(mouseScreenPos: { x: number; y: number; } = { x: -1, y: -1 }) {
     const DPR = this.app.devicePixelRatio;
-    const { document, isDrawing, tools, penSize, currentColor } = this.app;
+    const {
+      isDrawing,
+      penSize,
+      currentColor,
+      canvasWidthInCSSPixels,
+      canvasHeightInCSSPixels
+    } = this.app;
 
     // Disable pixel smoothing for crisp pixel art rendering
     if (this.context.imageSmoothingEnabled) this.context.imageSmoothingEnabled = false;
@@ -59,9 +69,9 @@ export default class CanvasRenderer {
     this.context.translate(this.camera.x, this.camera.y);
     this.context.scale(this.camera.zoom, this.camera.zoom);
 
-    this.backgroundRenderer.render(this.app.document.width, this.app.document.height);
-    this.documentRenderer.render(this.app.document);
-    this.gridOverlayRenderer.render(this.app.document);
+    this.backgroundRenderer.render(this.document.width, this.document.height);
+    this.documentRenderer.render(this.document);
+    this.gridOverlayRenderer.render(this.document);
 
     if (!isDrawing) {
       // Hover Preview overlay
@@ -72,18 +82,14 @@ export default class CanvasRenderer {
         rect
       );
       const gridCoords = this.camera.worldToGrid(worldX, worldY);
-      const activeToolName = tools.getActiveTool()?.name;
-      this.cursorOverlayRenderer.render(document, gridCoords, activeToolName, penSize, currentColor);
+      const activeToolName = this.tools.getActiveTool()?.name;
+      this.cursorOverlayRenderer.render(this.document, gridCoords, activeToolName, penSize, currentColor);
     }
 
     this.context.restore(); // Exit camera space, back to CSS screen space
 
     // UI Overlays
-    this.rulerOverlayRenderer.render(
-      this.app.canvasWidthInCSSPixels,
-      this.app.canvasHeightInCSSPixels,
-      mouseScreenPos
-    );
+    this.rulerOverlayRenderer.render(canvasWidthInCSSPixels, canvasHeightInCSSPixels, mouseScreenPos);
 
     this.context.restore(); // Exit DPR scaling space
   }
