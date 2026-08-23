@@ -11,6 +11,7 @@ import {
 const initialState: ApplicationState = {
   currentColor: "#ffff00",
   currentTool: "pen",
+  previousTool: "pen",
   penSize: 1,
   camera: {
     zoom: 1,

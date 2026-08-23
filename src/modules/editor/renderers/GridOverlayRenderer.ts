@@ -1,16 +1,17 @@
 import type Camera from "../Camera";
 import type PixelDocument from "../core/PixelDocument";
+import { applicationStore } from "../../store";
 
 export default class GridOverlayRenderer {
-  showGrid = true;
-
   constructor(
     private context: CanvasRenderingContext2D,
     private camera: Camera
   ) { }
 
   render(document: PixelDocument) {
-    if (!this.showGrid || this.camera.zoom < 4) return;
+    const { preferences: { grid } } = applicationStore.getState();
+
+    if (!grid.enabled || this.camera.zoom < 4) return;
 
     this.context.save();
 
