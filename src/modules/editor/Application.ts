@@ -1,19 +1,15 @@
-import { ApplicationEventTypes, type color } from "../types";
-import type { ToolType } from "../tools/types";
+import { ApplicationEventTypes } from "../types";
 import { GlobalEmitter } from "../utils/EventEmitter";
 import PixelDocument from "./core/PixelDocument";
 import Camera from "./Camera";
 import CanvasRenderer from "./renderers/CanvasRenderer";
-import InputController, { PointerEventType } from "./controllers/InputController";
+import InputController from "./controllers/InputController";
 import UIManager from "./managers/UIManager";
 import ToolManager from "../tools/ToolManager";
 import ExportsManager from "./managers/ExportsManager";
 import { ApplicationStateActions, applicationStore } from "../store";
 
 export default class Application {
-  penSize = 1;
-  currentColor: color = "#ffee00";
-
   isDrawing = false;
   isPanning = false;
   isQuickColorPicking = false;
@@ -48,6 +44,7 @@ export default class Application {
 
     this.input = new InputController(
       this,
+      this.tools,
       this.camera,
       this.renderer,
       this.canvas,
@@ -59,7 +56,7 @@ export default class Application {
     this.renderLoop = this.renderLoop.bind(this);
 
     this.attachCustomEventListeners();
-    this.attachStateSubscriptions();
+    this.attachStateChangeListeners();
     this.setupResizeObserver();
     this.startLoop();
   }
@@ -86,31 +83,14 @@ export default class Application {
     });
   }
 
-  attachStateSubscriptions() {
-    applicationStore.select(
-      (state) => state.currentTool,
-      (tool) => this.setTool(tool)
-    );
-
-    applicationStore.select(
-      (state) => state.penSize,
-      (size) => this.penSize = size
-    );
-
-    applicationStore.select(
-      (state) => state.preferences.grid,
-      (grid) => this.renderer.showGrid = grid.enabled
-    );
-
+  attachStateChangeListeners() {
     applicationStore.select(
       (state) => state.document.size,
-      ({ width, height }) => this.resizeDocument(width, height)
+      ({ width, height }) => {
+        this.document.resize(width, height);
+        this.fitToView();
+      }
     );
-
-    applicationStore.on(ApplicationStateActions.SetColor, (event) => {
-      const { color, updateUi } = event.payload;
-      this.setColor(color, updateUi);
-    });
   }
 
   setupResizeObserver() {
@@ -141,7 +121,7 @@ export default class Application {
         this.canvas.height = cssHeight * DPR;
 
         if (!isInitialRender && cssWidth > 0 && cssHeight > 0) {
-          this.resetView();
+          this.fitToView();
           isInitialRender = true;
         } else {
           // Re-center the camera on the saved focal point using new dimensions
@@ -154,33 +134,11 @@ export default class Application {
     observer.observe(this.canvasContainer);
   }
 
-  setTool(name: ToolType) {
-    this.ui.setActiveTool(name);
-    this.tools.setActiveTool(name);
-  }
-
-  setColor(color: color, updateUi: boolean) {
-    this.currentColor = color;
-
-    if (!updateUi) return;
-
-    this.ui.updateColorUI(color);
-  }
-
-  useActiveTool(coords: { x: number; y: number; }, action: PointerEventType) {
-    this.tools.applyActiveTool(action, coords);
-  }
-
-  resizeDocument(width: number, height: number) {
-    this.document.resize(width, height);
-    this.resetView();
-  }
-
   clearDocument() {
     this.document.clear();
   }
 
-  resetView() {
+  fitToView() {
     this.camera.fitToView(
       this.canvasWidthInCSSPixels,
       this.canvasHeightInCSSPixels,

@@ -7,6 +7,7 @@ import DocumentRenderer from "./DocumentRenderer";
 import GridOverlayRenderer from "./GridOverlayRenderer";
 import RulersOverlayRenderer from "./RulersOverlayRenderer";
 import CursorOverlayRenderer from "./CursorOverlayRenderer";
+import { applicationStore } from "../../store";
 
 export default class CanvasRenderer {
   private context: CanvasRenderingContext2D;
@@ -35,20 +36,11 @@ export default class CanvasRenderer {
     this.cursorOverlayRenderer = new CursorOverlayRenderer(this.context, camera);
   }
 
-  get showGrid() {
-    return this.gridOverlayRenderer.showGrid;
-  }
-
-  set showGrid(value) {
-    this.gridOverlayRenderer.showGrid = value;
-  }
-
   render(mouseScreenPos: { x: number; y: number; } = { x: -1, y: -1 }) {
     const DPR = this.app.devicePixelRatio;
+    const { penSize, currentColor} = applicationStore.getState();
     const {
       isDrawing,
-      penSize,
-      currentColor,
       canvasWidthInCSSPixels,
       canvasHeightInCSSPixels
     } = this.app;

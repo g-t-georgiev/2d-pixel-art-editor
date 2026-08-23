@@ -1,14 +1,11 @@
 import type Application from "../editor/Application";
-import type { ITool, Tools, ToolType } from "./types";
+import type { ITool, Tools } from "./types";
 import type PixelDocument from "../editor/core/PixelDocument";
 import { PointerEventType } from "../editor/controllers/InputController";
 import { PenTool, EraserTool, BucketTool, EyeDropperTool } from "./index";
 import { ApplicationStateActions, applicationStore } from "../store";
 
 export default class ToolManager {
-  private currentTool: ToolType = "pen";
-  private previousTool: ToolType = this.currentTool;
-
   tools: Tools;
 
   constructor(
@@ -23,27 +20,18 @@ export default class ToolManager {
     };
   }
 
-  setActiveTool(type: ToolType) {
-    if (!Object.prototype.hasOwnProperty.call(this.tools, type))
-      console.warn(`No tool with name "${type}" was found.`);
-
-    if (this.currentTool === type) return;
-
-    if (this.currentTool !== "eyedropper") {
-      this.previousTool = this.currentTool;
-    }
-
-    this.currentTool = type;
-  }
-
   trySwitchToPrevTool() {
-    if (!this.previousTool || this.previousTool === this.currentTool) return;
+    const { currentTool, previousTool } = applicationStore.getState();
 
-    applicationStore.dispatch(ApplicationStateActions.SetTool, this.previousTool);
+    if (!previousTool || previousTool === currentTool) return;
+
+    applicationStore.dispatch(ApplicationStateActions.SetTool, previousTool);
   }
 
   getActiveTool(): ITool {
-    return this.tools[this.currentTool];
+    const { currentTool } = applicationStore.getState();
+
+    return this.tools[currentTool];
   }
 
   /** Evaluates the active tool and passes a strictly defined context. */
@@ -55,11 +43,13 @@ export default class ToolManager {
 
     if (!tool) return;
 
+    const { penSize, currentColor } = applicationStore.getState();
+
     // Create a standardized payload containing only what tools need to operate
     const context = {
       document: this.document,
-      color: this.app.currentColor,
-      size: this.app.penSize,
+      color: currentColor,
+      size: penSize,
       isDrawing: this.app.isDrawing
     };
 
