@@ -28,8 +28,7 @@ export default class UIManager {
   elements = Elements;
 
   constructor(
-    private app: Application,
-    private store: typeof applicationStore
+    private app: Application
   ) {
     this.bindEvents();
   }
@@ -53,13 +52,13 @@ export default class UIManager {
     toolBtnKeys.forEach((name) => {
       const toolBtn = tools[name];
       toolBtn?.addEventListener("click", () =>
-        this.store.dispatch(ApplicationStateActions.SetTool, name)
+        applicationStore.dispatch(ApplicationStateActions.SetTool, name)
       );
     });
 
     // Inputs
     colorPicker?.addEventListener("color-changed", ((ev: CustomEvent<ColorChangeEventShape>) => {
-      this.store.dispatch(
+      applicationStore.dispatch(
         ApplicationStateActions.SetColor,
         { color: ev.detail.hex, updateUi: false }
       )
@@ -67,16 +66,16 @@ export default class UIManager {
     penSizeSelect?.addEventListener("change", (ev) => {
       const target = ev.target as HTMLInputElement;
       const value = parseInt(target.value, 10);
-      this.store.dispatch(ApplicationStateActions.EditPen, { size: value });
+      applicationStore.dispatch(ApplicationStateActions.EditPen, { size: value });
     });
     gridSizeSelect?.addEventListener("change", (ev) => {
       const target = ev.target as HTMLInputElement;
       const [w, h] = target.value.split("x").map(Number);
-      this.store.dispatch(ApplicationStateActions.ResizeDocument, { width: w, height: h });
+      applicationStore.dispatch(ApplicationStateActions.ResizeDocument, { width: w, height: h });
     });
     toggleGrid?.addEventListener("change", (ev) => {
       const target = ev.target as HTMLInputElement;
-      this.store.dispatch(ApplicationStateActions.ToggleGrid, { enabled: target.checked });
+      applicationStore.dispatch(ApplicationStateActions.ToggleGrid, { enabled: target.checked });
     });
 
     // Palette Swatches
@@ -91,7 +90,7 @@ export default class UIManager {
           return;
         }
 
-        this.store.dispatch(
+        applicationStore.dispatch(
           ApplicationStateActions.SetColor,
           { color, updateUi: true }
         );
