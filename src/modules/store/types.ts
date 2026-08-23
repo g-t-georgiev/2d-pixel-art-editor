@@ -20,6 +20,7 @@ export type ApplicationStateActionsMap = {
 export interface ApplicationState {
   currentColor: color;
   currentTool: ToolType;
+  previousTool: ToolType,
   penSize: number;
   camera: {
     zoom: number;

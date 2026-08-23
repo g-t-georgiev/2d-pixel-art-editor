@@ -5,15 +5,15 @@ import { applicationStore, ApplicationStateActions } from "../../store";
 import { color } from "../../types";
 
 const Elements = {
-  gridSizeSelect: document.getElementById("gridSizeSelect"),
+  documentSizeSelect: document.getElementById("documentSizeSelect"),
   penSizeSelect: document.getElementById("penSizeSelect"),
   colorPicker: document.querySelector<ColorPickerButton>("#colorPicker"),
-  toggleGrid: document.getElementById("toggleGrid"),
+  gridToggleBtn: document.getElementById("gridToggleBtn"),
   coordsDisplay: document.getElementById("coordsDisplay"),
   zoomDisplay: document.getElementById("zoomDisplay"),
   btnZoomIn: document.getElementById("btnZoomIn"),
   btnZoomOut: document.getElementById("btnZoomOut"),
-  btnZoomReset: document.getElementById("btnZoomReset"),
+  btnZoomFit: document.getElementById("btnZoomFit"),
   btnClear: document.getElementById("btnClear"),
   btnExport: document.getElementById("btnExport"),
   tools: {
@@ -30,53 +30,46 @@ export default class UIManager {
   constructor(
     private app: Application
   ) {
-    this.bindEvents();
+    this.attachDOMEventListeners();
+    this.attachStateChangeListeners();
   }
 
-  bindEvents() {
-    const {
-      tools,
-      colorPicker,
-      penSizeSelect,
-      gridSizeSelect,
-      toggleGrid,
-      btnZoomIn,
-      btnZoomOut,
-      btnZoomReset,
-      btnClear,
-      btnExport,
-    } = this.elements;
+  private attachDOMEventListeners() {
+    const { btnExport } = this.elements;
 
-    // Tool buttons
-    const toolBtnKeys = Object.keys(tools) as ToolType[];
-    toolBtnKeys.forEach((name) => {
-      const toolBtn = tools[name];
-      toolBtn?.addEventListener("click", () =>
-        applicationStore.dispatch(ApplicationStateActions.SetTool, name)
-      );
+    this.attachToolHandlers();
+    this.attachColorChangeHandlers();
+    this.attachDocumentHandlers();
+    this.attachZoomButtonHandlers();
+
+    btnExport?.addEventListener("click", () => this.app.exportPNG());
+  }
+
+  private attachZoomButtonHandlers() {
+    const { btnZoomIn, btnZoomOut, btnZoomFit } = this.elements;
+
+    // Zoom Buttons
+    btnZoomIn?.addEventListener("click", () => {
+      this.app.zoomBy(1.2);
     });
 
-    // Inputs
+    btnZoomOut?.addEventListener("click", () => {
+      this.app.zoomBy(0.8);
+    });
+
+    btnZoomFit?.addEventListener("click", () => this.app.fitToView());
+  }
+
+  private attachColorChangeHandlers() {
+    const { colorPicker } = this.elements;
+
+    // Color Picker
     colorPicker?.addEventListener("color-changed", ((ev: CustomEvent<ColorChangeEventShape>) => {
       applicationStore.dispatch(
         ApplicationStateActions.SetColor,
         { color: ev.detail.hex, updateUi: false }
       )
     }) as EventListener);
-    penSizeSelect?.addEventListener("change", (ev) => {
-      const target = ev.target as HTMLInputElement;
-      const value = parseInt(target.value, 10);
-      applicationStore.dispatch(ApplicationStateActions.EditPen, { size: value });
-    });
-    gridSizeSelect?.addEventListener("change", (ev) => {
-      const target = ev.target as HTMLInputElement;
-      const [w, h] = target.value.split("x").map(Number);
-      applicationStore.dispatch(ApplicationStateActions.ResizeDocument, { width: w, height: h });
-    });
-    toggleGrid?.addEventListener("change", (ev) => {
-      const target = ev.target as HTMLInputElement;
-      applicationStore.dispatch(ApplicationStateActions.ToggleGrid, { enabled: target.checked });
-    });
 
     // Palette Swatches
     const colorSwatches = document.querySelectorAll<HTMLElement>(".palette-swatch");
@@ -96,22 +89,59 @@ export default class UIManager {
         );
       });
     });
-
-    // Zoom Buttons
-    btnZoomIn?.addEventListener("click", () => {
-      this.app.zoomBy(1.2);
-    });
-    btnZoomOut?.addEventListener("click", () => {
-      this.app.zoomBy(0.8);
-    });
-    btnZoomReset?.addEventListener("click", () => this.app.resetView());
-
-    // Actions
-    btnClear?.addEventListener("click", () => this.app.clearDocument());
-    btnExport?.addEventListener("click", () => this.app.exportPNG());
   }
 
-  setActiveTool(name: ToolType) {
+  private attachDocumentHandlers() {
+    const { gridToggleBtn, documentSizeSelect, btnClear} = this.elements;
+
+    gridToggleBtn?.addEventListener("change", (ev) => {
+      const target = ev.target as HTMLInputElement;
+      applicationStore.dispatch(ApplicationStateActions.ToggleGrid, { enabled: target.checked });
+    });
+
+    documentSizeSelect?.addEventListener("change", (ev) => {
+      const target = ev.target as HTMLInputElement;
+      const [w, h] = target.value.split("x").map(Number);
+      applicationStore.dispatch(ApplicationStateActions.ResizeDocument, { width: w, height: h });
+    });
+
+    btnClear?.addEventListener("click", () => this.app.clearDocument());
+  }
+
+  private attachToolHandlers() {
+    const { tools, penSizeSelect } = this.elements;
+
+    const toolBtnKeys = Object.keys(tools) as ToolType[];
+    toolBtnKeys.forEach((name) => {
+      const toolBtn = tools[name];
+      toolBtn?.addEventListener("click", () =>
+        applicationStore.dispatch(ApplicationStateActions.SetTool, name)
+      );
+    });
+
+    penSizeSelect?.addEventListener("change", (ev) => {
+      const target = ev.target as HTMLInputElement;
+      const value = parseInt(target.value, 10);
+      applicationStore.dispatch(ApplicationStateActions.EditPen, { size: value });
+    });
+  }
+
+  private attachStateChangeListeners() {
+    applicationStore.on(ApplicationStateActions.SetColor, (event) => {
+      const { color, updateUi } = event.payload;
+
+      if (!updateUi) return;
+
+      this.updateColorUI(color);
+    });
+
+    applicationStore.select(
+      (state) => state.currentTool,
+      (tool) => this.setActiveTool(tool)
+    );
+  }
+
+  private setActiveTool(name: ToolType) {
     const activeToolBtns = Object.entries(this.elements.tools)
       .filter(([_, button]) => button?.classList.contains("active"));
 
@@ -123,7 +153,7 @@ export default class UIManager {
     activeToolBtns.forEach(([_, button]) => button?.classList.remove("active"));
   }
 
-  updateColorUI(color: color) {
+  private updateColorUI(color: color) {
     if (!this.elements.colorPicker) return;
 
     // Because "null" value represents empty/transparent color, but we can't pass null as a color
@@ -137,6 +167,7 @@ export default class UIManager {
     if (this.elements.coordsDisplay) {
       this.elements.coordsDisplay.textContent = `X: ${coords.x}, Y: ${coords.y}`;
     }
+
     if (this.elements.zoomDisplay) {
       this.elements.zoomDisplay.textContent = `Zoom: ${Math.round((zoom / 24) * 100)}%`;
     }
