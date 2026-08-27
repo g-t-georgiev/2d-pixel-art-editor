@@ -1,53 +1,37 @@
 import type Application from "../editor/Application";
+import type { ITool, Tools } from "./types";
+import type PixelDocument from "../editor/core/PixelDocument";
 import { PointerEventType } from "../editor/controllers/InputController";
-import { PenTool, EraserTool, BucketTool, EyedropperTool } from "./index";
-
-export type Tools = {
-  pen: PenTool;
-  eraser: EraserTool;
-  bucket: BucketTool;
-  eyedropper: EyedropperTool;
-}
-
-export type ToolType = keyof Tools;
-
+import { PenTool, EraserTool, BucketTool, EyeDropperTool } from "./index";
+import { ApplicationStateActions, applicationStore } from "../store";
 
 export default class ToolManager {
-  private activeTool: ToolType = "pen";
-  private previousTool: ToolType = this.activeTool;
-
   tools: Tools;
 
-  constructor(private app: Application) {
+  constructor(
+    private app: Application,
+    private document: PixelDocument
+  ) {
     this.tools = {
       pen: new PenTool(),
       eraser: new EraserTool(),
       bucket: new BucketTool(),
-      eyedropper: new EyedropperTool()
+      eyedropper: new EyeDropperTool()
     };
   }
 
-  setActiveTool(type: ToolType) {
-    if (!Object.prototype.hasOwnProperty.call(this.tools, type))
-      console.warn(`No tool with name "${type}" was found.`);
-
-    if (this.activeTool === type) return;
-
-    if (this.activeTool !== "eyedropper") {
-      this.previousTool = this.activeTool;
-    }
-
-    this.activeTool = type;
-  }
-
   trySwitchToPrevTool() {
-    if (!this.previousTool || this.previousTool === this.activeTool) return;
+    const { currentTool, previousTool } = applicationStore.getState();
 
-    this.app.setTool(this.previousTool);
+    if (!previousTool || previousTool === currentTool) return;
+
+    applicationStore.dispatch(ApplicationStateActions.SetTool, previousTool);
   }
 
-  getActiveTool() {
-    return this.tools[this.activeTool];
+  getActiveTool(): ITool {
+    const { currentTool } = applicationStore.getState();
+
+    return this.tools[currentTool];
   }
 
   /** Evaluates the active tool and passes a strictly defined context. */
@@ -59,19 +43,19 @@ export default class ToolManager {
 
     if (!tool) return;
 
+    const { penSize, currentColor } = applicationStore.getState();
+
     // Create a standardized payload containing only what tools need to operate
     const context = {
-      document: this.app.document,
-      color: this.app.currentColor,
-      size: this.app.penSize,
+      document: this.document,
+      color: currentColor,
+      size: penSize,
       isDrawing: this.app.isDrawing
     };
 
     const actionLabel = (action[0].toUpperCase() + action.slice(1)) as Capitalize<typeof action>;
     const methodName = `onMouse${actionLabel}` as const;
 
-    if (typeof tool[methodName] === "function") {
-      tool[methodName](coords, context);
-    }
+    tool[methodName]?.(coords, context);
   }
 }

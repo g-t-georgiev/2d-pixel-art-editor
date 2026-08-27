@@ -1,3 +1,4 @@
+import "color-picker";
 import Application from "./editor/Application";
 
 window.addEventListener("DOMContentLoaded", () => {

@@ -1,16 +1,15 @@
+import { ApplicationEventTypes } from "../types";
 import { GlobalEmitter } from "../utils/EventEmitter";
 import PixelDocument from "./core/PixelDocument";
 import Camera from "./Camera";
 import CanvasRenderer from "./renderers/CanvasRenderer";
-import InputController, { PointerEventType } from "./controllers/InputController";
+import InputController from "./controllers/InputController";
 import UIManager from "./managers/UIManager";
-import ToolManager, { ToolType } from "../tools/ToolManager";
+import ToolManager from "../tools/ToolManager";
 import ExportsManager from "./managers/ExportsManager";
+import { ApplicationStateActions, applicationStore } from "../store";
 
 export default class Application {
-  penSize = 1;
-  currentColor = "#ffee00";
-
   isDrawing = false;
   isPanning = false;
   isQuickColorPicking = false;
@@ -30,18 +29,34 @@ export default class Application {
     this.canvasContainer = canvas.parentElement!;
 
     this.camera = new Camera();
-    this.renderer = new CanvasRenderer(this, this.canvas, this.camera);
     this.document = new PixelDocument(16, 16);
 
-    this.tools = new ToolManager(this);
     this.ui = new UIManager(this);
-    this.input = new InputController(this, this.canvas, this.canvasContainer);
+    this.tools = new ToolManager(this, this.document);
+
+    this.renderer = new CanvasRenderer(
+      this,
+      this.document,
+      this.tools,
+      this.canvas,
+      this.camera
+    );
+
+    this.input = new InputController(
+      this,
+      this.tools,
+      this.camera,
+      this.renderer,
+      this.canvas,
+      this.canvasContainer
+    );
 
     this.exports = new ExportsManager();
 
     this.renderLoop = this.renderLoop.bind(this);
 
     this.attachCustomEventListeners();
+    this.attachStateChangeListeners();
     this.setupResizeObserver();
     this.startLoop();
   }
@@ -59,13 +74,23 @@ export default class Application {
   }
 
   attachCustomEventListeners() {
-    this.events.on("eyedropper:color:picked", ({ color, trySwitchTool }) => {
-      this.setColor(color);
+    this.events.on(ApplicationEventTypes.PickColor, ({ color, trySwitchTool }) => {
+      applicationStore.dispatch(ApplicationStateActions.SetColor, { color, updateUi: true });
 
       if (!trySwitchTool) return;
 
       this.tools.trySwitchToPrevTool();
     });
+  }
+
+  attachStateChangeListeners() {
+    applicationStore.select(
+      (state) => state.document.size,
+      ({ width, height }) => {
+        this.document.resize(width, height);
+        this.fitToView();
+      }
+    );
   }
 
   setupResizeObserver() {
@@ -96,7 +121,7 @@ export default class Application {
         this.canvas.height = cssHeight * DPR;
 
         if (!isInitialRender && cssWidth > 0 && cssHeight > 0) {
-          this.resetView();
+          this.fitToView();
           isInitialRender = true;
         } else {
           // Re-center the camera on the saved focal point using new dimensions
@@ -109,31 +134,11 @@ export default class Application {
     observer.observe(this.canvasContainer);
   }
 
-  setTool(name: ToolType) {
-    this.ui.setActiveTool(name);
-    this.tools.setActiveTool(name);
-  }
-
-  setColor(color: string) {
-    this.ui.updateColorUI(color);
-    this.currentColor = color;
-  }
-
-  useActiveTool(coords: { x: number; y: number; }, action: PointerEventType) {
-    // Delegation: ToolManager figures out the arguments now
-    this.tools.applyActiveTool(action, coords);
-  }
-
-  resizeDocument(width: number, height: number) {
-    this.document.resize(width, height);
-    this.resetView();
-  }
-
   clearDocument() {
     this.document.clear();
   }
 
-  resetView() {
+  fitToView() {
     this.camera.fitToView(
       this.canvasWidthInCSSPixels,
       this.canvasHeightInCSSPixels,
@@ -152,6 +157,49 @@ export default class Application {
       centerY,
       factor,
       rect,
+      this.document.width,
+      this.document.height
+    );
+  }
+
+  updateCameraPos(dx?: number, dy?: number, clamp = true) {
+    if (!dx && !dy) return;
+
+    this.camera.moveBy(dx, dy);
+
+    if (!clamp) return;
+
+    this.camera.clamp(
+      this.canvasWidthInCSSPixels,
+      this.canvasHeightInCSSPixels,
+      this.document.width,
+      this.document.height
+    );
+  }
+
+  updateCameraZoom(
+    posX: number,
+    posY: number,
+    scrollY: number,
+    clamp = true
+  ) {
+    const zoomFactor = scrollY < 0 ? 1.15 : 0.85;
+    const rect = this.canvas.getBoundingClientRect();
+
+    this.camera.calculateZoom(
+      posX,
+      posY,
+      zoomFactor,
+      rect,
+      this.document.width,
+      this.document.height
+    );
+
+    if (!clamp) return;
+
+    this.camera.clamp(
+      this.canvasWidthInCSSPixels,
+      this.canvasHeightInCSSPixels,
       this.document.width,
       this.document.height
     );

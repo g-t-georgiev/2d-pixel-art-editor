@@ -97,6 +97,12 @@ export default class Camera {
     this.y = (canvasHeight / 2) - scaledY;
   }
 
+  /** Update camera position by `dx` and/or `dy` offset. */
+  moveBy(dx?: number, dy?: number) {
+    if (dx) this.x += dx;
+    if (dy) this.y += dy;
+  }
+
   screenToWorld(screenX: number, screenY: number, canvasRect: DOMRect) {
     const localX = screenX - canvasRect.left;
     const localY = screenY - canvasRect.top;
