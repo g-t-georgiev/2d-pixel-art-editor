@@ -1,16 +1,19 @@
-import type Application from "../editor/Application";
-import type { ITool, Tools } from "./types";
-import type PixelDocument from "../editor/core/PixelDocument";
-import { PointerEventType } from "../editor/controllers/InputController";
-import { PenTool, EraserTool, BucketTool, EyeDropperTool } from "./index";
-import { ApplicationStateActions, applicationStore } from "../store";
+import type { Position } from "@modules/types";
+import type Application from "@modules/editor/Application";
+import type { ITool, Tools } from "@modules/tools/types";
+import type PixelDocument from "@modules/editor/core/PixelDocument";
+import type HistoryManager from "@modules/history/HistoryManager";
+import { PointerEventType } from "@modules/editor/controllers/InputController";
+import { PenTool, EraserTool, BucketTool, EyeDropperTool } from "@modules/tools/toolsExport";
+import { ApplicationStateActions, applicationStore } from "@modules/store";
 
 export default class ToolManager {
   tools: Tools;
 
   constructor(
     private app: Application,
-    private document: PixelDocument
+    private document: PixelDocument,
+    private history: HistoryManager
   ) {
     this.tools = {
       pen: new PenTool(),
@@ -37,18 +40,24 @@ export default class ToolManager {
   /** Evaluates the active tool and passes a strictly defined context. */
   applyActiveTool(
     action: PointerEventType = PointerEventType.Down,
-    coords: { x: number; y: number; }
+    coords: Position
   ) {
+    const layer = this.document.getActiveLayer();
+
+    if (!layer?.visible) return;
+
     const tool = this.getActiveTool();
 
     if (!tool) return;
 
     const { penSize, currentColor } = applicationStore.getState();
+    const colotToUse = tool.name === "eraser" ? null : currentColor;
 
     // Create a standardized payload containing only what tools need to operate
     const context = {
       document: this.document,
-      color: currentColor,
+      history: this.history,
+      color: colotToUse,
       size: penSize,
       isDrawing: this.app.isDrawing
     };

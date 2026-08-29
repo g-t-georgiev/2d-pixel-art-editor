@@ -1,7 +1,7 @@
-import type { color } from "../types";
+import type { Color } from "@modules/types";
 
 export default class ColorUtils {
-  static hexToRgba(value: color) {
+  static hexToRgba(value: Color) {
     if (!value) return { r: 0, g: 0, b: 0, a: 0 };
 
     // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")

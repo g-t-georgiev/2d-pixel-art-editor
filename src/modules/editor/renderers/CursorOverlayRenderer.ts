@@ -1,6 +1,6 @@
-import type { color } from "../../types";
-import type Camera from "../Camera";
-import type PixelDocument from "../core/PixelDocument";
+import type { Color, Position } from "@modules/types";
+import type Camera from "@modules/editor/Camera";
+import type PixelDocument from "@modules/editor/core/PixelDocument";
 
 export default class CursorOverlayRenderer {
   constructor(
@@ -10,10 +10,10 @@ export default class CursorOverlayRenderer {
 
   render(
     document: PixelDocument,
-    gridCoords: { x: number; y: number; },
+    gridCoords: Position,
     activeToolName: string,
     penSize: number,
-    currentColor: color
+    currentColor: Color
   ) {
     // Only render hover inside bounds and when not actively panning
     if (

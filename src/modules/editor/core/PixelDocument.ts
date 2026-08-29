@@ -1,9 +1,9 @@
-import type { color } from "../../types";
-import PixelDocumentLayer from "./PixelDocumentLayer";
+import type { Color, PixelChange } from "@modules/types";
+import PixelDocumentLayer from "@modules/editor/core/PixelDocumentLayer";
 
 export default class PixelDocument {
   layers: PixelDocumentLayer[] = [];
-  activeLayerId: color = null;
+  activeLayerId: string | null = null;
   layerIdCounter: number = 0;
 
   constructor(
@@ -27,7 +27,7 @@ export default class PixelDocument {
 
     // Resize every layer's grid independently, preserving existing pixel data
     this.layers.forEach(layer => {
-      const newGrid = new Array(newWidth * newHeight).fill(null);
+      const newGrid: Color[] = new Array(newWidth * newHeight).fill(null);
 
       // Copy pixels from the old grid to the new grid (anchored top-left)
       for (let y = 0; y < Math.min(oldHeight, newHeight); y++) {
@@ -44,12 +44,25 @@ export default class PixelDocument {
 
   /** Clears pixel data. If a layerId is specified, clears only that layer. Otherwise, clears all layers. */
   clear(layerId: string | null = null) {
+    const clearedLayers: [string, PixelChange[]][] = [];
+
     if (layerId) {
-      const layer = this.getLayer(layerId);
-      layer?.clear();
-    } else {
-      this.layers.forEach(layer => layer?.clear());
+      const changes = this.getLayer(layerId)?.clear() ?? [];
+
+      if (changes.length) clearedLayers.push([layerId, changes]);
+
+      return clearedLayers;
     }
+
+    for (const layer of this.layers) {
+      const changes = layer.clear();
+
+      if (!changes?.length) continue;
+
+      clearedLayers.push([layer.id, changes]);
+    }
+
+    return clearedLayers;
   }
 
   addLayer(name: string) {
@@ -95,7 +108,7 @@ export default class PixelDocument {
     return layer.getPixelData(x, y);
   }
 
-  setPixelData(x: number, y: number, color: color, layerId = this.activeLayerId) {
+  setPixelData(x: number, y: number, color: Color, layerId = this.activeLayerId) {
     if (!layerId) return;
 
     const layer = this.getLayer(layerId);

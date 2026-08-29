@@ -1,13 +1,16 @@
-import type Application from "../Application";
-import type Camera from "../Camera";
-import type PixelDocument from "../core/PixelDocument";
-import type ToolManager from "../../tools/ToolManager";
-import BackgroundRenderer from "./BackgroundRenderer";
-import DocumentRenderer from "./DocumentRenderer";
-import GridOverlayRenderer from "./GridOverlayRenderer";
-import RulersOverlayRenderer from "./RulersOverlayRenderer";
-import CursorOverlayRenderer from "./CursorOverlayRenderer";
-import { applicationStore } from "../../store";
+import type { Position } from "@modules/types";
+import type Application from "@modules/editor/Application";
+import type Camera from "@modules/editor/Camera";
+import type PixelDocument from "@modules/editor/core/PixelDocument";
+import type { ToolManager } from "@modules/tools";
+import {
+  BackgroundRenderer,
+  DocumentRenderer,
+  GridOverlayRenderer,
+  RulersOverlayRenderer,
+  CursorOverlayRenderer
+} from "@modules/editor/renderers/renderersExport";
+import { applicationStore } from "@modules/store";
 
 export default class CanvasRenderer {
   private context: CanvasRenderingContext2D;
@@ -36,7 +39,7 @@ export default class CanvasRenderer {
     this.cursorOverlayRenderer = new CursorOverlayRenderer(this.context, camera);
   }
 
-  render(mouseScreenPos: { x: number; y: number; } = { x: -1, y: -1 }) {
+  render(mouseScreenPos: Position = { x: -1, y: -1 }) {
     const DPR = this.app.devicePixelRatio;
     const { penSize, currentColor} = applicationStore.getState();
     const {

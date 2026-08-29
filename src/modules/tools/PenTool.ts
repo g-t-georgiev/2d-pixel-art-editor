@@ -1,24 +1,29 @@
-import type { ToolContext } from "./types";
-import Tool from "./Tool";
-import MathUtils from "../utils/MathUtils";
+import type { PixelChange, Position } from "@modules/types";
+import type { ToolContext } from "@modules/tools/types";
+import Tool from "@modules/tools/Tool";
+import MathUtils from "@modules/utils/MathUtils";
+import { DrawCommand } from "@modules/history/commands";
 
 export default class PenTool extends Tool {
-  private lastCoords: { x: number; y: number; } | null = null;
+  private lastCoords: Position | null = null;
+  private currentStroke: PixelChange[] = [];
 
   constructor(name = "pen") {
     super(name);
   }
 
-  onMouseDown(coords: { x: number; y: number; }, context: ToolContext) {
+  onMouseDown(coords: Position, context: ToolContext) {
     this.lastCoords = coords;
+    this.currentStroke = [];
+
     this.drawPoint(coords, context);
   }
 
-  onMouseMove(coords: { x: number; y: number; }, context: ToolContext) {
+  onMouseMove(coords: Position, context: ToolContext) {
     if (!context.isDrawing) return;
 
     if (this.lastCoords) {
-      const points = MathUtils.bresenhamLine(
+      const points = MathUtils.plotLine(
         this.lastCoords.x,
         this.lastCoords.y,
         coords.x,
@@ -33,22 +38,44 @@ export default class PenTool extends Tool {
     this.lastCoords = coords;
   }
 
-  onMouseUp() {
+  onMouseUp(
+    _coords: Position,
+    { document, history }: ToolContext
+  ) {
     this.lastCoords = null;
+
+    if (this.currentStroke.length > 0 && document.activeLayerId) {
+      history.record(new DrawCommand(document, document.activeLayerId, this.currentStroke));
+    }
+
+    this.currentStroke = [];
   }
 
   private drawPoint(
-    { x, y }: { x: number; y: number; },
+    { x, y }: Position,
     { document, color, size }: ToolContext
   ) {
     const halfSize = Math.floor(size / 2);
-    const activeColor = this.name === "eraser" ? null : color;
 
     for (let dy = 0; dy < size; dy++) {
       for (let dx = 0; dx < size; dx++) {
         const px = x - halfSize + dx;
         const py = y - halfSize + dy;
-        document.setPixelData(px, py, activeColor);
+
+        if (!document.isWithinBounds(px, py)) continue;
+
+        const oldColor = document.getPixelData(px, py);
+
+        if (oldColor === color) continue;
+
+        this.currentStroke.push({
+          x: px,
+          y: py,
+          oldColor,
+          newColor: color,
+        });
+
+        document.setPixelData(px, py, color);
       }
     }
   }

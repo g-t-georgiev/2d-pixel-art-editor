@@ -1,4 +1,5 @@
-import type Camera from "../Camera";
+import type { Position } from "@modules/types";
+import type Camera from "@modules/editor/Camera";
 
 export default class RulersOverlayRenderer {
   private readonly style = {
@@ -43,7 +44,7 @@ export default class RulersOverlayRenderer {
   render(
     canvasWidth: number,
     canvasHeight: number,
-    mouseScreenPos: { x: number; y: number; }
+    mouseScreenPos: Position
   ) {
     this.context.save();
     this.context.font = "12px sans-serif";
@@ -126,7 +127,7 @@ export default class RulersOverlayRenderer {
     ctx.stroke();
   }
 
-  drawMouseIndicators({ x, y }: { x: number; y: number; }) {
+  drawMouseIndicators({ x, y }: Position) {
     const size = this._size;
     const ctx = this.context;
 

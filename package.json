@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/g-t-georgiev/2d-pixel-art-editor#readme",
   "devDependencies": {
+    "@types/node": "^26.4.0",
     "typescript": "^7.0.2",
     "vite": "^8.2.1"
   },

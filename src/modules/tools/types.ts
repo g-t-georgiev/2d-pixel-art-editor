@@ -1,17 +1,19 @@
-import type { color } from "../types";
-import type { PenTool, EraserTool, BucketTool, EyeDropperTool } from "./index";
-import type PixelDocument from "../editor/core/PixelDocument";
+import type { Color, Position } from "@modules/types";
+import type { PenTool, EraserTool, BucketTool, EyeDropperTool } from "@modules/tools/toolsExport";
+import type PixelDocument from "@modules/editor/core/PixelDocument";
+import type HistoryManager from "@modules/history/HistoryManager";
 
 export interface ITool {
   name: string;
-  onMouseDown(coords: { x: number; y: number; }, context: ToolContext): void;
-  onMouseMove?(coords: { x: number; y: number; }, context: ToolContext): void;
-  onMouseUp?(coords: { x: number; y: number; }, context: ToolContext): void;
+  onMouseDown(coords: Position, context: ToolContext): void;
+  onMouseMove?(coords: Position, context: ToolContext): void;
+  onMouseUp?(coords: Position, context: ToolContext): void;
 }
 
 export type ToolContext = {
   document: PixelDocument;
-  color: color;
+  history: HistoryManager;
+  color: Color;
   size: number;
   isDrawing: boolean;
 };
