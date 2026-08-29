@@ -1,16 +1,15 @@
-import type Command from "./commands/Command";
+import type { ICommand } from "@modules/history/types";
 
 export default class HistoryManager {
-  private undoStack: Command[];
-  private redoStack: Command[];
+  private undoStack: ICommand[];
+  private redoStack: ICommand[];
 
   constructor() {
     this.undoStack = [];
     this.redoStack = [];
   }
 
-  execute(command: Command) {
-    command.execute();
+  record(command: ICommand) {
     this.undoStack.push(command);
     this.redoStack = []; // Clear redo on new action
   }

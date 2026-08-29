@@ -1,4 +1,11 @@
-export type color = string | null;
+export type Color = string | null;
+export type Position = { x: number; y: number; };
+export type PixelChange = Position & {
+  oldColor: Color;
+  newColor: Color;
+};
+export type Dimensions = { width: number; height: number; };
+export type ResizeData = { oldSize: Dimensions; newSize: Dimensions; };
 
 export enum ApplicationEventTypes {
   PickColor = "eyedropper:color:picked",
@@ -6,6 +13,6 @@ export enum ApplicationEventTypes {
 };
 
 export type ApplicationEventsMap = {
-  [ApplicationEventTypes.PickColor]: (payload: { color: color; trySwitchTool: boolean }) => void;
+  [ApplicationEventTypes.PickColor]: (payload: { color: Color; trySwitchTool: boolean }) => void;
   // Declare callback shapes for events...
 };

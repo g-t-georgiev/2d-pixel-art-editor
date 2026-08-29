@@ -1,8 +1,8 @@
-import type Application from "../Application";
-import type { ToolType } from "../../tools/types";
+import type { Color, Position } from "@modules/types";
+import type Application from "@modules/editor/Application";
+import type { ToolType } from "@modules/tools";
 import type { ColorChangeEventShape, ColorPickerButton } from "color-picker";
-import { applicationStore, ApplicationStateActions } from "../../store";
-import { color } from "../../types";
+import { applicationStore, ApplicationStateActions } from "@modules/store";
 
 const Elements = {
   documentSizeSelect: document.getElementById("documentSizeSelect"),
@@ -92,7 +92,7 @@ export default class UIManager {
   }
 
   private attachDocumentHandlers() {
-    const { gridToggleBtn, documentSizeSelect, btnClear} = this.elements;
+    const { gridToggleBtn, documentSizeSelect, btnClear } = this.elements;
 
     gridToggleBtn?.addEventListener("change", (ev) => {
       const target = ev.target as HTMLInputElement;
@@ -102,7 +102,7 @@ export default class UIManager {
     documentSizeSelect?.addEventListener("change", (ev) => {
       const target = ev.target as HTMLInputElement;
       const [w, h] = target.value.split("x").map(Number);
-      applicationStore.dispatch(ApplicationStateActions.ResizeDocument, { width: w, height: h });
+      this.app.resizeDocument(w, h);
     });
 
     btnClear?.addEventListener("click", () => this.app.clearDocument());
@@ -139,6 +139,11 @@ export default class UIManager {
       (state) => state.currentTool,
       (tool) => this.setActiveTool(tool)
     );
+
+    applicationStore.select(
+      (state) => state.document.size,
+      ({ width, height }) => this.updateDocumentSizeUI(width, height)
+    );
   }
 
   private setActiveTool(name: ToolType) {
@@ -153,7 +158,7 @@ export default class UIManager {
     activeToolBtns.forEach(([_, button]) => button?.classList.remove("active"));
   }
 
-  private updateColorUI(color: color) {
+  private updateColorUI(color: Color) {
     if (!this.elements.colorPicker) return;
 
     // Because "null" value represents empty/transparent color, but we can't pass null as a color
@@ -163,7 +168,25 @@ export default class UIManager {
     this.elements.colorPicker.setAttribute("value", color);
   }
 
-  updateStatus(coords: { x: number; y: number; }, zoom: number) {
+  private updateDocumentSizeUI(width: number, height: number) {
+    const documentSizeSelect = this.elements.documentSizeSelect as HTMLSelectElement | null;
+
+    if (!documentSizeSelect) return;
+
+    const newValue = `${width}x${height}`;
+    const currentValue = documentSizeSelect.value;
+
+    if (newValue === currentValue) return;
+
+    const newIndex = Array.prototype.findIndex.call(
+      documentSizeSelect.children,
+      (child) => child.value === newValue
+    );
+
+    documentSizeSelect.selectedIndex = newIndex;
+  }
+
+  updateStatus(coords: Position, zoom: number) {
     if (this.elements.coordsDisplay) {
       this.elements.coordsDisplay.textContent = `X: ${coords.x}, Y: ${coords.y}`;
     }

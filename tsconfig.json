@@ -1,5 +1,13 @@
 {
   "compilerOptions": {
+    "paths": {
+      "@modules/*": [
+        "./src/modules/*"
+      ],
+      "@modules": [
+        "./src/modules"
+      ]
+    },
     "target": "ES2022",
     "useDefineForClassFields": true,
     "module": "ESNext",

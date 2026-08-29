@@ -1,9 +1,9 @@
-import type { color } from "../../types";
+import type { Color, PixelChange } from "@modules/types";
 
 export default class PixelDocumentLayer {
   visible: boolean = true;
   opacity: number = 1;
-  grid: Array<color>;
+  grid: Array<Color>;
 
   constructor(
     readonly id: string,
@@ -24,13 +24,36 @@ export default class PixelDocumentLayer {
     return this.grid[y * this.width + x] ?? null;
   }
 
-  setPixelData(x: number, y: number, color: color) {
-    if (!this.isWithinBounds(x, y) || !this.visible) return;
+  setPixelData(x: number, y: number, color: Color) {
+    if (!this.isWithinBounds(x, y)) return;
 
     this.grid[y * this.width + x] = color;
   }
 
   clear() {
-    this.grid.fill(null);
+    const isNotEmpty = this.grid.some((value) => value !== null);
+    const changes: PixelChange[] = [];
+
+    if (isNotEmpty) {
+      for (let i = 0; i < this.grid.length; i++) {
+        const oldColor = this.grid[i];
+
+        if (oldColor === null) continue;
+
+        this.grid[i] = null;
+
+        const col = i % this.width;
+        const row = Math.floor(i / this.width);
+
+        changes.push({
+          x: col,
+          y: row,
+          oldColor,
+          newColor: null
+        });
+      }
+    }
+
+    return changes;
   }
 }

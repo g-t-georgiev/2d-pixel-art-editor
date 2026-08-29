@@ -1,19 +1,24 @@
-import type PixelDocument from "../../editor/core/PixelDocument";
-import Command from "./Command";
+import type { PixelChange } from "@modules/types";
+import type PixelDocument from "@modules/editor/core/PixelDocument";
+import Command from "@modules/history/commands/Command";
 export default class DrawCommand extends Command {
   constructor(
     document: PixelDocument,
-    layerId: string,
-    readonly pixels: Array<{ x: number; y: number; oldColor: string; newColor: string; }>
+    protected readonly layerId: string,
+    protected readonly pixels: Iterable<PixelChange>
   ) {
-    super(document, layerId);
+    super(document);
   }
 
-  execute() {
-    this.pixels.forEach((p) => this.document.setPixelData(p.x, p.y, p.newColor, this.layerId));
+  execute(): void {
+    for (const { x, y, newColor } of this.pixels) {
+      this.document.setPixelData(x, y, newColor, this.layerId);
+    }
   }
 
-  undo() {
-    this.pixels.forEach((p) => this.document.setPixelData(p.x, p.y, p.oldColor, this.layerId));
+  undo(): void {
+    for (const { x, y, oldColor } of this.pixels) {
+      this.document.setPixelData(x, y, oldColor, this.layerId);
+    }
   }
 }

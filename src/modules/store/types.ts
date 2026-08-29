@@ -1,5 +1,5 @@
-import type { ToolType } from "../tools/types";
-import type { color } from "../types";
+import type { Color, Position } from "@modules/types";
+import type { ToolType } from "@modules/tools";
 
 export enum ApplicationStateActions {
   SetTool = "store:tool:set",
@@ -11,20 +11,20 @@ export enum ApplicationStateActions {
 
 export type ApplicationStateActionsMap = {
   [ApplicationStateActions.SetTool]: ToolType;
-  [ApplicationStateActions.SetColor]: { color: color, updateUi: boolean };
-  [ApplicationStateActions.EditPen]: { size: number; };
-  [ApplicationStateActions.ToggleGrid]: { enabled: boolean; };
-  [ApplicationStateActions.ResizeDocument]: { width: number; height: number; };
+  [ApplicationStateActions.SetColor]: { color: Color, updateUi: boolean };
+  [ApplicationStateActions.EditPen]: { size: number };
+  [ApplicationStateActions.ToggleGrid]: { enabled: boolean };
+  [ApplicationStateActions.ResizeDocument]: { width: number; height: number };
 };
 
 export interface ApplicationState {
-  currentColor: color;
+  currentColor: Color;
   currentTool: ToolType;
   previousTool: ToolType,
   penSize: number;
   camera: {
     zoom: number;
-    position: { x: number; y: number; };
+    position: Position;
   };
   document: {
     size: { width: number; height: number; };

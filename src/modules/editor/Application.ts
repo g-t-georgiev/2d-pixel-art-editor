@@ -1,13 +1,14 @@
-import { ApplicationEventTypes } from "../types";
-import { GlobalEmitter } from "../utils/EventEmitter";
-import PixelDocument from "./core/PixelDocument";
-import Camera from "./Camera";
-import CanvasRenderer from "./renderers/CanvasRenderer";
-import InputController from "./controllers/InputController";
-import UIManager from "./managers/UIManager";
-import ToolManager from "../tools/ToolManager";
-import ExportsManager from "./managers/ExportsManager";
-import { ApplicationStateActions, applicationStore } from "../store";
+import { ApplicationEventTypes, type Position } from "@modules/types";
+import { GlobalEmitter } from "@modules/utils/EventEmitter";
+import PixelDocument from "@modules/editor/core/PixelDocument";
+import Camera from "@modules/editor/Camera";
+import CanvasRenderer from "@modules/editor/renderers/CanvasRenderer";
+import InputController from "@modules/editor/controllers/InputController";
+import UIManager from "@modules/editor/managers/UIManager";
+import { ToolManager } from "@modules/tools";
+import ExportsManager from "@modules/editor/managers/ExportsManager";
+import { HistoryManager, ClearCommand, ResizeCommand } from "@modules/history";
+import { ApplicationStateActions, applicationStore } from "@modules/store";
 
 export default class Application {
   isDrawing = false;
@@ -16,6 +17,7 @@ export default class Application {
 
   readonly camera: Camera;
   readonly renderer: CanvasRenderer;
+  readonly history: HistoryManager;
   readonly document: PixelDocument;
   readonly tools: ToolManager;
   readonly ui: UIManager;
@@ -31,8 +33,10 @@ export default class Application {
     this.camera = new Camera();
     this.document = new PixelDocument(16, 16);
 
+    this.history = new HistoryManager();
+
     this.ui = new UIManager(this);
-    this.tools = new ToolManager(this, this.document);
+    this.tools = new ToolManager(this, this.document, this.history);
 
     this.renderer = new CanvasRenderer(
       this,
@@ -48,7 +52,8 @@ export default class Application {
       this.camera,
       this.renderer,
       this.canvas,
-      this.canvasContainer
+      this.canvasContainer,
+      this.history
     );
 
     this.exports = new ExportsManager();
@@ -135,7 +140,28 @@ export default class Application {
   }
 
   clearDocument() {
-    this.document.clear();
+    const clearedLayers = this.document.clear();
+
+    if (!clearedLayers.length) return;
+
+    this.history.record(new ClearCommand(this.document, clearedLayers));
+  }
+
+  resizeDocument(width: number, height: number) {
+    const oldSize = {
+      width: this.document.width,
+      height: this.document.height
+    };
+
+    if (oldSize.width === width && oldSize.height === height) return;
+
+    const command = new ResizeCommand(
+      applicationStore,
+      { oldSize, newSize: { width, height }}
+    );
+
+    command.execute();
+    this.history.record(command);
   }
 
   fitToView() {
@@ -205,7 +231,7 @@ export default class Application {
     );
   }
 
-  updateCoordsDisplay(coords: { x: number; y: number; }) {
+  updateCoordsDisplay(coords: Position) {
     this.ui.updateStatus(coords, this.camera.zoom);
   }
 

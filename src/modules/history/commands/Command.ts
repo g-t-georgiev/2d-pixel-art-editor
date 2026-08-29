@@ -1,9 +1,9 @@
-import type PixelDocument from "../../editor/core/PixelDocument";
+import type { ICommand } from "@modules/history/types";
+import type PixelDocument from "@modules/editor/core/PixelDocument";
 
-export default abstract class Command {
+export default abstract class Command implements ICommand {
   constructor(
-    readonly document: PixelDocument,
-    readonly layerId: string
+    protected readonly document: PixelDocument
   ) { }
 
   abstract execute(): void;

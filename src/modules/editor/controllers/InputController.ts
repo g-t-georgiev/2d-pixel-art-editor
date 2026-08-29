@@ -1,8 +1,10 @@
-import type Application from "../Application";
-import type Camera from "../Camera";
-import type CanvasRenderer from "../renderers/CanvasRenderer";
-import type ToolManager from "../../tools/ToolManager";
-import { ApplicationStateActions, applicationStore } from "../../store";
+import type { Position } from "@modules/types";
+import type Application from "@modules/editor/Application";
+import type Camera from "@modules/editor/Camera";
+import type CanvasRenderer from "@modules/editor/renderers/CanvasRenderer";
+import type { ToolManager } from "@modules/tools";
+import type { HistoryManager } from "@modules/history";
+import { ApplicationStateActions, applicationStore } from "@modules/store";
 
 export enum MouseButton {
   Left,
@@ -18,9 +20,9 @@ export enum PointerEventType {
 
 
 export default class InputController {
-  private lastMouse: { x: number; y: number; } = { x: 0, y: 0 };
+  private lastMouse: Position = { x: 0, y: 0 };
 
-  public mouseScreenPos: { x: number; y: number; } = { x: -1, y: -1 };
+  public mouseScreenPos: Position = { x: -1, y: -1 };
 
   constructor(
     private app: Application,
@@ -28,7 +30,8 @@ export default class InputController {
     private camera: Camera,
     private renderer: CanvasRenderer,
     private canvas: HTMLCanvasElement,
-    private viewport: HTMLElement
+    private viewport: HTMLElement,
+    private history: HistoryManager
   ) {
     this.attachListeners();
   }
@@ -41,6 +44,25 @@ export default class InputController {
     this.viewport.addEventListener("pointerup", (ev) => this.onMouseUp(ev));
 
     window.addEventListener("keydown", (ev) => {
+      const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
+      const modifier = isMac ? ev.metaKey : ev.ctrlKey;
+
+      // Undo/redo logic
+      if (modifier && ev.key.toLowerCase() === "z") {
+        ev.preventDefault();
+
+        if (ev.shiftKey) {
+          this.history.redo();
+        } else {
+          this.history.undo();
+        }
+      } else if (modifier && ev.key.toLowerCase() === "y") {
+        ev.preventDefault();
+
+        this.history.redo();
+      }
+
+      // Quick color picking tool logic
       if (ev.key === "Alt" && !this.app.isQuickColorPicking) {
         this.app.isQuickColorPicking = true;
         applicationStore.dispatch(ApplicationStateActions.SetTool, "eyedropper");

@@ -48,7 +48,7 @@ export const documentResizeSchema = {
     },
     height: {
       type: "number",
-    },
+    }
   },
   required: ["width", "height"],
   additionalProperties: false,
