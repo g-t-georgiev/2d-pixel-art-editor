@@ -31,7 +31,6 @@ root/
 │   │   │   │
 │   │   │   ├── managers/
 │   │   │   │   ├── ExportsManager.ts
-│   │   │   │   ├── HistoryManager.ts
 │   │   │   │   └── UIManager.js
 │   │   │   │
 │   │   │   ├── renderers/
@@ -47,20 +46,39 @@ root/
 │   │   │
 │   │   ├── history/
 │   │   │   ├── commands/
+│   │   │   │   ├── ClearCommand.ts
 │   │   │   │   ├── Command.ts
 │   │   │   │   ├── DrawCommand.ts
+│   │   │   │   ├── index.ts
+│   │   │   │   ├── ResizeCommand.ts
 │   │   │   │   └── ....
 │   │   │   │
-│   │   │   └── HistoryManager.ts
+│   │   │   ├── HistoryManager.ts
+│   │   │   ├── index.ts
+│   │   │   └── types.ts
+│   │   │
+│   │   ├── store/
+│   │   │   ├── actions/
+│   │   │   │   ├── index.ts
+│   │   │   │   └── ....
+│   │   │   │
+│   │   │   ├── schemas/
+│   │   │   │   ├── index.ts
+│   │   │   │   └── ....
+│   │   │   │
+│   │   │   ├── index.ts
+│   │   │   └── types.ts
 │   │   │
 │   │   ├── tools/
 │   │   │   ├── BucketTool.ts
 │   │   │   ├── EraserTool.ts
-│   │   │   ├── EyedropperTool.ts
+│   │   │   ├── EyeDropperTool.ts
 │   │   │   ├── index.ts
 │   │   │   ├── PenTool.ts
 │   │   │   ├── Tool.ts
-│   │   │   └── ToolManager.ts
+│   │   │   ├── ToolManager.ts
+│   │   │   ├── toolsExport.ts
+│   │   │   └── types.ts
 │   │   │
 │   │   ├── utils/
 │   │   │   ├── ColorUtils.ts
@@ -79,5 +97,6 @@ root/
 ├── index.html
 ├── package.json
 ├── README.md
-└── tsconfig.json
+├── tsconfig.json
+└── vite.config.ts
 ```
