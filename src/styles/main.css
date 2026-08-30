@@ -142,25 +142,3 @@ canvas {
   display: flex;
   justify-content: space-between;
 }
-
-/* HUD */
-.floating-panel {
-  position: absolute;
-  top: 54px;
-  right: 16px;
-  width: 240px;
-  /* DEMO HEIGHT */
-  height: 320px;
-  /* Semi-transparent black */
-  background-color: rgba(20, 20, 20, 0.85);
-  /* Matches your toolbar border */
-  border: 1px solid #3a3a3a;
-  border-radius: 6px;
-  /* Gives it a frosted glass effect over the canvas */
-  backdrop-filter: blur(4px);
-  display: flex;
-  flex-direction: column;
-  /* Keeps it above the canvas */
-  z-index: 100;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-}

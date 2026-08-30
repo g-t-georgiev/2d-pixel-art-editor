@@ -78,15 +78,11 @@
   <div class="viewport" id="viewport">
     <canvas id="paintCanvas"></canvas>
 
-    <!-- NEW: Floating HUD -->
-    <layers-panel class="floating-panel">
-      <!--
-        Internally, this component will render:
-          - A draggable header (collapsible)
-          - A "+" button
-          - A list of <layer-item> components
-      -->
-    </layers-panel>
+    <layer-manager>
+      <layer-item name="Highlights"></layer-item>
+      <layer-item name="Character Base" active></layer-item>
+      <layer-item name="Background" hidden></layer-item>
+    </layer-manager>
   </div>
 
   <!-- Status Bar -->

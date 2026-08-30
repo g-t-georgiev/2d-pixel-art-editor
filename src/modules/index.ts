@@ -1,5 +1,6 @@
 import "color-picker";
-import Application from "./editor/Application";
+import "@modules/layers/components";
+import Application from "@modules/editor/Application";
 
 window.addEventListener("DOMContentLoaded", () => {
   const canvasElement = document.querySelector<HTMLCanvasElement>("#paintCanvas");
