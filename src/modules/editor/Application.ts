@@ -232,6 +232,8 @@ export default class Application {
   }
 
   updateCoordsDisplay(coords: Position) {
+    if (!this.document.isWithinBounds(coords.x, coords.y)) return;
+
     this.ui.updateStatus(coords, this.camera.zoom);
   }
 
