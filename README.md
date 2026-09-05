@@ -57,6 +57,11 @@ root/
 │   │   │   ├── index.ts
 │   │   │   └── types.ts
 │   │   │
+│   │   ├── layers/
+│   │   │   ├── index.ts
+│   │   │   ├── LayerItem.ts
+│   │   │   └── LayersManager.ts
+│   │   │
 │   │   ├── store/
 │   │   │   ├── actions/
 │   │   │   │   ├── index.ts
@@ -84,6 +89,12 @@ root/
 │   │   │   ├── ColorUtils.ts
 │   │   │   ├── EventEmitter.ts
 │   │   │   └── MathUtils.ts
+│   │   │
+│   │   ├── web-component-utils/
+│   │   │   ├── index.ts
+│   │   │   ├── types.ts
+│   │   │   ├── utils.ts
+│   │   │   └── WebComponentBase.ts
 │   │   │
 │   │   ├── index.ts
 │   │   └── types.js

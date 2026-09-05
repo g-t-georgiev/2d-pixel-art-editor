@@ -1,4 +1,4 @@
-import { type WebComponent, WebComponentBase, customElement, html } from "@modules/web-components";
+import { type WebComponent, WebComponentBase, customElement, html } from "@modules/web-component-utils";
 import LayerItem from "./LayerItem";
 
 /** @private */
