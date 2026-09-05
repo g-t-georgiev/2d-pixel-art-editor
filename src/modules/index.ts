@@ -1,5 +1,5 @@
 import "color-picker";
-import "@modules/layers/components";
+import "@modules/layers";
 import Application from "@modules/editor/Application";
 
 window.addEventListener("DOMContentLoaded", () => {
