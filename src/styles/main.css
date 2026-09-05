@@ -133,6 +133,14 @@ canvas {
   image-rendering: pixelated;
 }
 
+/* LAYERS */
+.layer-placeholder {
+  background: transparent;
+  border: 1px dashed #4f46e5;
+  border-radius: 4px;
+}
+
+/* STATUS BAR */
 .status-bar {
   background-color: #222;
   padding: 4px 16px;

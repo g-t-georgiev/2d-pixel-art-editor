@@ -1,16 +1,26 @@
-import type { Template, WebComponent } from "@modules/types";
+import { type WebComponent, WebComponentBase, customElement, html } from "@modules/web-components";
 
-const getHTMLString: Template<{
-  name: string;
-  isActive: boolean;
-  isHidden: boolean;
-}> = ({ name, isActive, isHidden }) => `
+/** @private */
+const getLayerItemHtml = html<{ name: string; }>`
   <style>
+    :host {
+      display: block;
+      transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    :host(.dragging) {
+      opacity: 0.95;
+      position: fixed;
+      z-index: 1000;
+      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3);
+      transition: none !important;
+    }
+
     .layer {
       display: flex;
       align-items: center;
       padding: 6px 8px;
-      background-color: ${isActive ? '#3f3f3f' : 'transparent'};
+      background-color: #2d2d2d;
       border-radius: 4px;
       color: #e0e0e0;
       cursor: pointer;
@@ -19,6 +29,10 @@ const getHTMLString: Template<{
 
     .layer:hover {
       background-color: #3a3a3a;
+    }
+
+    :host([active]) .layer {
+      background-color: #3f3f3f;
     }
 
     .thumbnail {
@@ -73,32 +87,148 @@ const getHTMLString: Template<{
       font-size: 14px;
       line-height: 1;
     }
+
+    :host(:only-child) .drag-handle {
+      pointer-events: none;
+      opacity: 0.5;
+    }
+
+    .visibility-btn::before {
+      content: "[O]";
+      display: inline-block;
+    }
+
+    :host([is-hidden]) .visibility-btn::before {
+      content: "[X]";
+    }
   </style>
 
   <div class="layer">
-    <button class="drag-handle" aria-label="Move panel" title="Drag or use arrow keys">⋮⋮</button>
+    <button data-id="drag-handle" class="drag-handle" aria-label="Move panel" title="Drag or use arrow keys">⋮⋮</button>
     <div class="thumbnail"></div>
-    <span class="title">${name}</span>
+    <span data-id="title" class="title">${(p) => p.name}</span>
     <div class="actions">
-      <button title="Toggle Visibility">${isHidden ? '[-]' : '[O]'}</button>
-      <button title="Options">[⋮]</button>
+      <button data-id="visibility-btn" class="visibility-btn" type="button" title="Toggle Visibility"></button>
+      <button data-id="context-menu-btn" class="context-menu-btn" type="button" title="Options">⋮</button>
     </div>
   </div>
 `;
 
-export default class LayerItem extends HTMLElement implements WebComponent {
+@customElement("layer-item")
+export default class LayerItem extends WebComponentBase({ mode: "open" }, { abstract: true }) implements WebComponent {
+  static get observedAttributes() {
+    return ["name"];
+  }
+
+  private _title: HTMLElement;
+  private _dragHandle: HTMLElement;
+  private _visibilityBtn: HTMLElement;
+  private _contextMenuBtn: HTMLElement;
+
+  private _abortController!: AbortController;
+
+  private _requestedDragging: boolean = false;
+
   constructor() {
     super();
 
-    const shadowRoot = this.attachShadow({ mode: "open" });
+    this._shadowRoot.innerHTML = getLayerItemHtml({ name: this.displayName });
 
-    // Retrieve attributes
-    const name = this.getAttribute("name") || "Layer";
-    const isActive = this.hasAttribute("active");
-    const isHidden = this.hasAttribute("hidden");
-
-    shadowRoot.innerHTML = getHTMLString({ name, isActive, isHidden });
+    this._title = this._shadowRoot.querySelector("[data-id=\"title\"]")!;
+    this._dragHandle = this._shadowRoot.querySelector("[data-id=\"drag-handle\"]")!;
+    this._visibilityBtn = this._shadowRoot.querySelector("[data-id=\"visibility-btn\"]")!;
+    this._contextMenuBtn = this._shadowRoot.querySelector("[data-id=\"context-menu-btn\"]")!;
   }
+
+  get displayName(): string {
+    return this.getAttribute("name") || "Anonymous Layer";
+  }
+
+  set displayName(value: string | null) {
+    this._title.textContent = value || "Anonymous Layer";
+  }
+
+  get active() {
+    return this.hasAttribute("active") ?? false;
+  }
+
+  get requestedDragging() {
+    return this._requestedDragging;
+  }
+
+  connectedCallback(): void {
+    this._abortController = new AbortController();
+    const { signal } = this._abortController;
+
+    this._attachClickListeners(signal);
+    this._attachDragHandleEventListeners(signal);
+    this._attachVisibilityBtnEventListeners(signal);
+    this._attachContextMenuBtnEventListeners(signal);
+  }
+
+  disconnectedCallback(): void {
+    this._abortController.abort();
+  }
+
+  attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null): void {
+    if (name === "name" && oldValue !== newValue) {
+      this.displayName = newValue;
+    }
+  }
+
+  private _attachVisibilityBtnEventListeners(signal: AbortSignal) {
+    this._visibilityBtn.addEventListener("click", (ev: PointerEvent) => {
+      ev.preventDefault();
+      this._stopPropagation(ev);
+      this.toggleAttribute("is-hidden");
+    }, { signal });
+
+    this._visibilityBtn.addEventListener("pointerdown", this._stopPropagation);
+    this._visibilityBtn.addEventListener("pointermove", this._stopPropagation);
+    this._visibilityBtn.addEventListener("pointerup", this._stopPropagation);
+    this._visibilityBtn.addEventListener("pointercancel", this._stopPropagation);
+  }
+
+  private _attachDragHandleEventListeners(signal: AbortSignal) {
+    this._dragHandle.addEventListener("pointerdown", (ev: PointerEvent) => {
+      ev.preventDefault();
+      this._requestedDragging = true;
+    }, { signal });
+
+    this.addEventListener("pointerup", (ev: PointerEvent) => {
+      ev.preventDefault();
+      this._requestedDragging = false;
+    }, { signal });
+
+    this._dragHandle.addEventListener("pointerup", this._stopPropagation, { signal });
+    this._dragHandle.addEventListener("click", this._stopPropagation, { signal });
+  }
+
+  private _attachContextMenuBtnEventListeners(signal: AbortSignal) {
+    this._contextMenuBtn.addEventListener("click", this._stopPropagation, { signal });
+    this._contextMenuBtn.addEventListener("pointerdown", this._stopPropagation, { signal });
+    this._contextMenuBtn.addEventListener("pointermove", this._stopPropagation, { signal });
+    this._contextMenuBtn.addEventListener("pointerup", this._stopPropagation, { signal });
+    this._contextMenuBtn.addEventListener("pointercancel", this._stopPropagation, { signal });
+  }
+
+private _attachClickListeners(signal: AbortSignal) {
+  const layerDiv = this._shadowRoot.querySelector(".layer")! as HTMLElement;
+
+  layerDiv.addEventListener("click", (ev: PointerEvent) => {
+    const target = ev.target as HTMLElement;
+    // Ignore button clicks
+    if (target.closest("button")) return;
+
+    this.dispatchEvent(new CustomEvent("layer-item:select", {
+      bubbles: true,
+      composed: true,
+      detail: this
+    }));
+  }, { signal });
 }
 
-customElements.define("layer-item", LayerItem);
+  private _stopPropagation<T extends Event>(ev: T) {
+    ev.stopPropagation();
+  }
+}

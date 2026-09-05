@@ -1,6 +1,8 @@
-import type { Template, WebComponent } from "@modules/types";
+import { type WebComponent, WebComponentBase, customElement, html } from "@modules/web-components";
+import LayerItem from "./LayerItem";
 
-const getHTMLString: Template<{ isExpanded: boolean; }> = ({ isExpanded }) => `
+/** @private */
+const getLayersManagerHtml = html<{ isExpanded: boolean; }>`
   <style>
     :host {
       --x-offset: 44px;
@@ -107,9 +109,22 @@ const getHTMLString: Template<{ isExpanded: boolean; }> = ({ isExpanded }) => `
 
   <div class="panel" role="region" aria-label="Layer Manager">
     <div class="header">
-      <button class="drag-handle" aria-label="Move panel" title="Drag or use arrow keys">⋮⋮</button>
+      <button
+        data-id="drag-handle"
+        class="drag-handle"
+        aria-label="Move panel"
+        title="Drag or use arrow keys"
+      >⋮⋮</button>
       <span class="title">Layers</span>
-      <button class="toggle-btn" aria-expanded="true" aria-controls="layer-content" aria-label="Toggle Layers">${isExpanded ? "[\u2013]" :"[\u002b]"}</button>
+      <button
+        data-id="toggle-btn"
+        class="toggle-btn"
+        aria-expanded="true"
+        aria-controls="layer-content"
+        aria-label="Toggle Layers"
+      >
+        ${(p) => p.isExpanded ? "[\u2013]" : "[\u002b]"}
+      </button>
     </div>
 
     <div class="collapsible-content" id="layer-content">
@@ -120,7 +135,8 @@ const getHTMLString: Template<{ isExpanded: boolean; }> = ({ isExpanded }) => `
   </div>
 `;
 
-export default class LayerManager extends HTMLElement implements WebComponent {
+@customElement("layer-manager")
+export default class LayerManager extends WebComponentBase({ mode: "open" }, { abstract: true }) implements WebComponent {
   private _isExpanded: boolean = true;
   private _isDragging: boolean = false;
 
@@ -138,12 +154,27 @@ export default class LayerManager extends HTMLElement implements WebComponent {
   private _panelContent: HTMLElement;
   private _panelContentInner: HTMLElement;
 
-  private resizeObserver!: ResizeObserver;
+  private _resizeObserver!: ResizeObserver;
+
+  private _abortController!: AbortController;
+
+  private _draggedItem: LayerItem | null = null;
+  private _dragPlaceholder: HTMLElement | null = null;
+  private _isDraggingActive = false;
+  private _dragStartPosX = 0;
+  private _dragStartPosY = 0;
+  private _dragInitialOffsetTop = 0;
+  private _dragPrevPosY = 0;
+  private _dragCurrPosX = 0;
+  private _dragCurrPosY = 0;
+  private _isSwapAnimInProgress = false;
+  private _scrollAnimFrame: number | null = null;
+  private _scrollSpeed = 0;
+  private _scrollThreshold = 40;
+  private _swapAnimDuration = 0;
 
   constructor() {
     super();
-
-    const shadowRoot = this.attachShadow({ mode: "open" });
 
     this._isExpanded = true;
     this._isDragging = false;
@@ -156,101 +187,122 @@ export default class LayerManager extends HTMLElement implements WebComponent {
     this._initialX = 0;
     this._initialY = 0;
 
-    shadowRoot.innerHTML = getHTMLString({ isExpanded: this._isExpanded });
+    this._shadowRoot.innerHTML = getLayersManagerHtml({ isExpanded: this._isExpanded });
 
     // this._panel = shadowRoot.querySelector(".panel")!;
     // this._header = shadowRoot.querySelector(".header")!;
-    this._dragHandle = shadowRoot.querySelector(".drag-handle")!;
-    this._toggleBtn = shadowRoot.querySelector(".toggle-btn")!;
-    this._panelContent = shadowRoot.querySelector(".collapsible-content")!;
-    this._panelContentInner = shadowRoot.querySelector(".content-inner")!;
+    this._dragHandle = this._shadowRoot.querySelector("[data-id=\"drag-handle\"]")!;
+    this._toggleBtn = this._shadowRoot.querySelector("[data-id=\"toggle-btn\"]")!;
+    this._panelContent = this._shadowRoot.querySelector(".collapsible-content")!;
+    this._panelContentInner = this._shadowRoot.querySelector(".content-inner")!;
 
     // Dragging
-    this.dragStart = this.dragStart.bind(this);
-    this.drag = this.drag.bind(this);
-    this.dragEnd = this.dragEnd.bind(this);
-
-    // Keyboard Dragging Accessibility
-    this.handleKeyboardDrag = this.handleKeyboardDrag.bind(this);
-
+    this._drag = this._drag.bind(this);
+    this._dragEnd = this._dragEnd.bind(this);
     // Panel Toggle
-    this.togglePanel = this.togglePanel.bind(this);
-
+    this._togglePanel = this._togglePanel.bind(this);
     // Stop propagation
     this._stopPropagation = this._stopPropagation.bind(this);
+    // Abort
+    this._onAbortSignalAborted = this._onAbortSignalAborted.bind(this);
   }
 
   public connectedCallback() {
-    // Dragging Event
-    this._dragHandle.addEventListener("pointerdown", this.dragStart);
-    // Keyboard Dragging Accessibility
-    this._dragHandle.addEventListener("keydown", this.handleKeyboardDrag);
-    // Panel Toggle Event
-    this._toggleBtn.addEventListener("click", this.togglePanel);
+    this._abortController = new AbortController();
+    const { signal } = this._abortController;
 
+    // Dragging
+    this._initDraggingLogic(signal);
+    // Panel Toggle Event
+    this._toggleBtn.addEventListener("click", this._togglePanel, { signal });
+
+    // Reorder children
+    this._initLayersReorder(signal);
+    // Toggle active child
+    this.addEventListener("layer-item:select", this._handlerLayerSelect as EventListener, { signal });
 
     // Stop propagation
-    this.addEventListener("pointerdown", this._stopPropagation);
-    this.addEventListener("pointermove", this._stopPropagation);
-    this.addEventListener("pointerup", this._stopPropagation);
-    this.addEventListener("pointercancel", this._stopPropagation);
-    this.addEventListener("click", this._stopPropagation);
-    this.addEventListener("dblclick", this._stopPropagation);
-    this.addEventListener("wheel", this._stopPropagation); // Stops canvas zooming when scrolling layer list
-    this.addEventListener("contextmenu", this._stopPropagation); // Stops custom canvas right-click menus
+    this.addEventListener("click", this._stopPropagation, { signal });
+    this.addEventListener("dblclick", this._stopPropagation, { signal });
+    this.addEventListener("wheel", this._stopPropagation, { signal }); // Stops canvas zooming when scrolling layer list
+    this.addEventListener("contextmenu", this._stopPropagation, { signal }); // Stops custom canvas right-click menus
 
     // Resize Observer
-    this.resizeObserver = new ResizeObserver(() => {
+    this._resizeObserver = new ResizeObserver(() => {
       if (this._isExpanded && this._panelContent.style.height !== "auto") {
         this._panelContent.style.setProperty("--max-height", `${this._panelContent.scrollHeight}px`);
         this._panelContent.style.height = "var(--max-height)";
       }
     });
-    this.resizeObserver.observe(this._panelContentInner);
+    this._resizeObserver.observe(this._panelContentInner);
   }
 
   public disconnectedCallback() {
     // Resize Observer
-    this.resizeObserver.disconnect();
+    this._resizeObserver.disconnect();
 
-    // Dragging Events
-    this._dragHandle.removeEventListener("pointerdown", this.dragStart);
-    this._dragHandle.removeEventListener("pointermove", this.drag);
-    this._dragHandle.removeEventListener("pointerup", this.dragEnd);
-    this._dragHandle.removeEventListener("pointercancel", this.dragEnd);
+    this._abortController.abort();
+    const { signal } = this._abortController;
+    signal?.removeEventListener("abort", this._onAbortSignalAborted);
+  }
+
+  private _initDraggingLogic(signal: AbortSignal) {
+    signal.addEventListener("abort", this._onAbortSignalAborted);
+
+    // Dragging Event
+    this._dragHandle.addEventListener("pointerdown", (ev: PointerEvent) => {
+      this._isDragging = true;
+
+      this._dragHandle.setPointerCapture(ev.pointerId);
+
+      this._initialX = ev.clientX - this._xOffset;
+      this._initialY = ev.clientY - this._yOffset;
+
+      this._dragHandle.addEventListener("pointermove", this._drag);
+      this._dragHandle.addEventListener("pointerup", this._dragEnd);
+      this._dragHandle.addEventListener("pointercancel", this._dragEnd);
+    }, { signal });
 
     // Keyboard Dragging Accessibility
-    this._dragHandle.removeEventListener("keydown", this.handleKeyboardDrag);
+    this._dragHandle.addEventListener("keydown", (ev: KeyboardEvent) => {
+      const step = ev.shiftKey ? 20 : 5; // Hold shift to move faster
+      let moved = false;
 
-    // Panel Toggle Event
-    this._toggleBtn.removeEventListener("click", this.togglePanel);
+      switch (ev.key) {
+        case "ArrowUp": {
+          this._yOffset -= step;
+          moved = true;
 
-    // Stop propagation
-    this.removeEventListener("pointerdown", this._stopPropagation);
-    this.removeEventListener("pointermove", this._stopPropagation);
-    this.removeEventListener("pointerup", this._stopPropagation);
-    this.removeEventListener("pointercancel", this._stopPropagation);
-    this.removeEventListener("click", this._stopPropagation);
-    this.removeEventListener("dblclick", this._stopPropagation);
-    this.removeEventListener("wheel", this._stopPropagation); // Stops canvas zooming when scrolling layer list
-    this.removeEventListener("contextmenu", this._stopPropagation); // Stops custom canvas right-click menus
+          break;
+        }
+        case "ArrowDown": {
+          this._yOffset += step;
+          moved = true;
+
+          break;
+        }
+        case "ArrowLeft": {
+          this._xOffset -= step;
+          moved = true;
+          break;
+        }
+        case "ArrowRight": {
+          this._xOffset += step;
+          moved = true;
+          break;
+        }
+      }
+
+      if (!moved) return;
+
+      ev.preventDefault();
+
+      this.updateTransform();
+      this.checkBounds();
+    }, { signal });
   }
 
-  /* Dragging Logic */
-  private dragStart(ev: PointerEvent) {
-    this._isDragging = true;
-
-    this._dragHandle.setPointerCapture(ev.pointerId);
-
-    this._initialX = ev.clientX - this._xOffset;
-    this._initialY = ev.clientY - this._yOffset;
-
-    this._dragHandle.addEventListener("pointermove", this.drag);
-    this._dragHandle.addEventListener("pointerup", this.dragEnd);
-    this._dragHandle.addEventListener("pointercancel", this.dragEnd);
-  }
-
-  private drag(ev: PointerEvent) {
+  private _drag(ev: PointerEvent) {
     if (!this._isDragging) return;
 
     ev.preventDefault();
@@ -264,7 +316,7 @@ export default class LayerManager extends HTMLElement implements WebComponent {
     this.updateTransform();
   }
 
-  private dragEnd(ev: PointerEvent) {
+  private _dragEnd(ev: PointerEvent) {
     this._isDragging = false;
 
     this._dragHandle.releasePointerCapture(ev.pointerId);
@@ -274,46 +326,9 @@ export default class LayerManager extends HTMLElement implements WebComponent {
 
     this.checkBounds(); // Ensure it hasn't been dropped off-screen
 
-    this._dragHandle.removeEventListener("pointermove", this.drag);
-    this._dragHandle.removeEventListener("pointerup", this.dragEnd);
-    this._dragHandle.removeEventListener("pointercancel", this.dragEnd);
-  }
-
-  private handleKeyboardDrag(ev: KeyboardEvent) {
-    const step = ev.shiftKey ? 20 : 5; // Hold shift to move faster
-    let moved = false;
-
-    switch (ev.key) {
-      case "ArrowUp": {
-        this._yOffset -= step;
-        moved = true;
-
-        break;
-      }
-      case "ArrowDown": {
-        this._yOffset += step;
-        moved = true;
-
-        break;
-      }
-      case "ArrowLeft": {
-        this._xOffset -= step;
-        moved = true;
-        break;
-      }
-      case "ArrowRight": {
-        this._xOffset += step;
-        moved = true;
-        break;
-      }
-    }
-
-    if (!moved) return;
-
-    ev.preventDefault();
-
-    this.updateTransform();
-    this.checkBounds();
+    this._dragHandle.removeEventListener("pointermove", this._drag);
+    this._dragHandle.removeEventListener("pointerup", this._dragEnd);
+    this._dragHandle.removeEventListener("pointercancel", this._dragEnd);
   }
 
   private updateTransform() {
@@ -365,7 +380,7 @@ export default class LayerManager extends HTMLElement implements WebComponent {
   }
 
   /* Collapse Logic (Adapted) */
-  private togglePanel() {
+  private _togglePanel() {
     this._isExpanded = !this._isExpanded;
     this._toggleBtn.toggleAttribute("aria-expanded", this._isExpanded);
     this._toggleBtn.textContent = this._isExpanded ? "[\u2013]" : "[\u002b]";
@@ -387,7 +402,7 @@ export default class LayerManager extends HTMLElement implements WebComponent {
 
       // Small timeout ensures the browser registers the removal of 'height: 0px' before setting the variable
       requestAnimationFrame(() => {
-        this._panelContent.style.setProperty("height", `${scrollHeight}px`);
+        this._panelContent.style.setProperty("height", "var(--max-height)");
       });
 
       this._panelContent.addEventListener("transitionend", onTransitionEnd);
@@ -407,6 +422,237 @@ export default class LayerManager extends HTMLElement implements WebComponent {
   private _stopPropagation<T extends Event>(ev: T) {
     ev.stopPropagation();
   }
-}
 
-customElements.define("layer-manager", LayerManager);
+  /**
+   * Execute tear-down and clean-up logic which couldn't be wired directly with the AbortSignal but
+   * is still somehow affected/concerned by the abort event of the AbortSignal triggering.
+   */
+  private _onAbortSignalAborted() {
+      this._dragHandle.addEventListener("pointermove", this._drag);
+      this._dragHandle.addEventListener("pointerup", this._dragEnd);
+      this._dragHandle.addEventListener("pointercancel", this._dragEnd);
+  }
+
+  private _initLayersReorder(signal: AbortSignal) {
+    this.addEventListener("pointerdown", (ev: PointerEvent) => {
+      this._stopPropagation(ev);
+      this._handleLayersReorderStart(ev);
+    }, { signal });
+
+    this.addEventListener("pointermove", (ev: PointerEvent) => {
+      this._stopPropagation(ev);
+      this._handleLayersReorder(ev);
+    }, { signal });
+
+    this.addEventListener("pointerup", (ev: PointerEvent) => {
+      this._stopPropagation(ev);
+      this._handleLayersReorderEnd(ev);
+    }, { signal });
+
+    this.addEventListener("pointercancel", (ev: PointerEvent) => {
+      this._stopPropagation(ev);
+      this._handleLayersReorderEnd(ev);
+    }, { signal });
+  }
+
+  private _handleLayersReorderStart(ev: PointerEvent) {
+    const eventTarget = ev.target as HTMLElement | null;
+    const draggedElement = eventTarget?.matches("layer-item") ? eventTarget : eventTarget?.closest("layer-item");
+    const isLayerItem = draggedElement instanceof LayerItem;
+
+    if (!isLayerItem || !draggedElement.requestedDragging) return;
+
+    ev.preventDefault();
+
+    this._draggedItem = draggedElement;
+    this._isDraggingActive = false;
+
+    this._dragStartPosX = ev.clientX;
+    this._dragStartPosY = ev.clientY;
+    this._dragPrevPosY = ev.clientY;
+    this._dragCurrPosX = ev.clientX;
+    this._dragCurrPosY = ev.clientY;
+
+    this._draggedItem.style.setProperty("cursor", "grabbing");
+
+    this._draggedItem.setPointerCapture(ev.pointerId);
+  }
+
+  private _handleLayersReorder(ev: PointerEvent) {
+    if (!this._draggedItem) return;
+
+    this._dragCurrPosX = ev.clientX;
+    this._dragCurrPosY = ev.clientY;
+
+    const deltaY = this._dragCurrPosY - this._dragStartPosY;
+    const deltaX = this._dragCurrPosX - this._dragStartPosX;
+
+    if (!this._isDraggingActive) {
+      if (Math.hypot(deltaX, deltaY) < 3) return;
+
+      this._isDraggingActive = true;
+
+      const rect = this._draggedItem.getBoundingClientRect();
+      const parentRect = this.getBoundingClientRect();
+
+      this._dragInitialOffsetTop = rect.top - parentRect.top;
+
+      const initialOffsetLeft = rect.left - parentRect.left;;
+
+      const computedTransition = getComputedStyle(this._draggedItem).transitionDuration;
+      this._swapAnimDuration = parseFloat(computedTransition) * (computedTransition.includes("ms") ? 1 : 1000) || 150;
+
+      this._dragPlaceholder = document.createElement("div");
+      this._dragPlaceholder.className = "layer-placeholder";
+      this._dragPlaceholder.style.width = `${rect.width}px`;
+      this._dragPlaceholder.style.height = `${rect.height}px`;
+      this._draggedItem.before(this._dragPlaceholder);
+
+      this._draggedItem.style.width = `${rect.width}px`;
+      this._draggedItem.style.height = `${rect.height}px`;
+      this._draggedItem.style.top = `${this._dragInitialOffsetTop}px`;
+      this._draggedItem.style.left = `${initialOffsetLeft}px`;
+      this._draggedItem.classList.add("dragging");
+
+      this._scrollAnimFrame = requestAnimationFrame(this._autoScroll);
+    }
+
+    this._draggedItem.style.top = `${this._dragInitialOffsetTop + deltaY}px`;
+
+    const scrollParent = this._getScrollParent(this._draggedItem) || document.body;
+    const scrollParentRect = scrollParent.getBoundingClientRect();
+
+    if (this._dragCurrPosY < scrollParentRect.top + this._scrollThreshold) {
+      this._scrollSpeed = -6;
+    } else if (this._dragCurrPosY > scrollParentRect.bottom - this._scrollThreshold) {
+      this._scrollSpeed = 6;
+    } else {
+      this._scrollSpeed = 0;
+    }
+
+    this._handleLayerIntersections();
+  }
+
+  private _handleLayersReorderEnd(ev: PointerEvent) {
+    if (!this._draggedItem) return;
+
+    this._draggedItem.style.removeProperty("cursor");
+
+    if (this._draggedItem.hasPointerCapture(ev.pointerId))
+      this._draggedItem.releasePointerCapture(ev.pointerId);
+
+    if (this._isDraggingActive) {
+      this._dragPlaceholder?.before(this._draggedItem);
+      this._dragPlaceholder?.remove();
+
+      this._draggedItem.style = "";
+      this._draggedItem.classList.remove("dragging");
+
+      cancelAnimationFrame(this._scrollAnimFrame!);
+    }
+
+    this._draggedItem = null;
+    this._dragPlaceholder = null;
+    this._isDraggingActive = false;
+    this._scrollSpeed = 0;
+  }
+
+  private _handleLayerIntersections() {
+    const isMovingDown = this._dragCurrPosY > this._dragPrevPosY;
+    this._dragPrevPosY = this._dragCurrPosY;
+
+    // Calculate visual center of dragged item
+    const draggedRect = this._draggedItem!.getBoundingClientRect();
+    const draggedCenterY = draggedRect.top + draggedRect.height / 2;
+
+    // Get all valid items we can swap with
+    const validItems = Array.from(this.querySelectorAll<LayerItem>("layer-item:not(.dragging)"));
+
+    // Find the exact element the mouse is currently hovering over
+    const hoverItem = validItems.find((item) => {
+      const rect = item.getBoundingClientRect();
+      return draggedCenterY >= rect.top && draggedCenterY <= rect.bottom;
+    });
+
+    if (hoverItem && hoverItem !== this._draggedItem) {
+      const hoverRect = hoverItem.getBoundingClientRect();
+      const targetCenterY = hoverRect.top + hoverRect.height / 2;
+
+      if (isMovingDown && draggedCenterY > targetCenterY) {
+        this._handleLayerAnimatedSwap(() => hoverItem.after(this._dragPlaceholder!));
+      } else if (!isMovingDown && draggedCenterY < targetCenterY) {
+        this._handleLayerAnimatedSwap(() => hoverItem.before(this._dragPlaceholder!));
+      }
+    }
+  }
+
+  private _handleLayerAnimatedSwap(swapAction: (...params: unknown[]) => unknown) {
+    if (this._isSwapAnimInProgress) return;
+
+    this._isSwapAnimInProgress = true;
+    setTimeout(() => {
+      this._isSwapAnimInProgress = false;
+    }, this._swapAnimDuration);
+
+    const layerItems = Array.from(this.querySelectorAll<LayerItem>("layer-item:not(.dragging)"));
+    const firstPositions = layerItems.map((layerItem) => layerItem.getBoundingClientRect().top);
+
+    swapAction();
+
+    const lastPositions = layerItems.map((layerItem) => layerItem.getBoundingClientRect().top);
+
+    layerItems.forEach((layerItem, index) => {
+      const deltaY = firstPositions[index] - lastPositions[index];
+
+      if (deltaY !== 0) {
+        // Temporarily remove the transition to snap it back to the "First" position
+        layerItem.style.transition = "none";
+        layerItem.style.transform = `translateY(${deltaY}px)`;
+
+        // Force the browser to recalculate layout
+        layerItem.getBoundingClientRect();
+
+        // Re-enable the bouncy transition and remove the transform so it glides home
+        requestAnimationFrame(() => {
+          layerItem.style.transition = ""; // Restores the bouncy transition from CSS
+          layerItem.style.transform = "";
+        });
+      }
+    });
+  }
+
+  /** Auto-scroll animation trigger + intersection checking under the hood. */
+  private _autoScroll = () => {
+    if (!this._draggedItem) return;
+
+    if (this._scrollSpeed !== 0) {
+      const scrollParent = this._getScrollParent(this._draggedItem) || document.body;
+      scrollParent.scrollTop += this._scrollSpeed;
+      this._handleLayerIntersections();
+    }
+    this._scrollAnimFrame = requestAnimationFrame(this._autoScroll);
+  }
+
+  /** Helper method to find the actual scrolling container dynamically */
+  private _getScrollParent(node: HTMLElement | null): HTMLElement | null {
+    if (node == null) return null;
+
+    if (node.scrollHeight > node.clientHeight) {
+      return node;
+    } else {
+      return this._getScrollParent(node.parentNode as HTMLElement);
+    }
+  }
+
+  private _handlerLayerSelect(ev: PointerEvent) {
+    const eventTarget = ev.target as HTMLElement;
+    const selectedElement = eventTarget?.matches("layer-item") ? eventTarget : eventTarget?.closest("layer-item");
+    const isLayerItem = selectedElement instanceof LayerItem;
+
+    if (!isLayerItem || this._draggedItem === selectedElement) return;
+
+    this.querySelectorAll("layer-item").forEach((layer) => {
+      layer.toggleAttribute("active", selectedElement === layer);
+    });
+  }
+}
