@@ -644,12 +644,10 @@ export default class LayerManager extends WebComponentBase({ mode: "open" }, { a
     }
   }
 
-  private _handlerLayerSelect(ev: PointerEvent) {
-    const eventTarget = ev.target as HTMLElement;
-    const selectedElement = eventTarget?.matches("layer-item") ? eventTarget : eventTarget?.closest("layer-item");
-    const isLayerItem = selectedElement instanceof LayerItem;
+  private _handlerLayerSelect(ev: CustomEvent<LayerItem>) {
+    const selectedElement = ev.detail;
 
-    if (!isLayerItem || this._draggedItem === selectedElement) return;
+    if (this._draggedItem === selectedElement) return;
 
     this.querySelectorAll("layer-item").forEach((layer) => {
       layer.toggleAttribute("active", selectedElement === layer);

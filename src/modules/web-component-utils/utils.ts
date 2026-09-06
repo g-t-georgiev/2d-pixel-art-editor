@@ -1,4 +1,4 @@
-import { TemplateFactory, TemplateValue, WebComponentContructor } from "./types";
+import { TemplateFactory, TemplateValue, WebComponentConstructor } from "./types";
 
 /** A tagged template utility for creating typed HTML string factories.*/
 export function html<T = Record<string, unknown>>(
@@ -20,7 +20,7 @@ export function html<T = Record<string, unknown>>(
  * Accepts the element's tag name as an argument.
  */
 export function customElement(tagName: string) {
-  return function (target: WebComponentContructor) {
+  return function (target: WebComponentConstructor) {
     customElements.define(tagName, target);
   };
 }

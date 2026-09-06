@@ -26,7 +26,7 @@ export interface WebComponent extends HTMLElement {
   ): void;
 };
 
-export interface WebComponentContructor extends CustomElementConstructor {
+export interface WebComponentConstructor extends CustomElementConstructor {
   new (...args: unknown[]): HTMLElement & WebComponent;
   /**
    * @static
