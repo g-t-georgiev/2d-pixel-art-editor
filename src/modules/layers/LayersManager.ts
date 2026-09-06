@@ -18,6 +18,7 @@ const getLayersManagerHtml = html<{ isExpanded: boolean; }>`
       /* Prevent scroll while dragging */
       touch-action: none;
       font-family: sans-serif;
+      cursor: default;
     }
 
     .panel {
