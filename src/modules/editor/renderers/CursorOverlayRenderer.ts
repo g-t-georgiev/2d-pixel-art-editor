@@ -9,7 +9,7 @@ export default class CursorOverlayRenderer {
   ) { }
 
   render(
-    document: PixelDocument,
+    doc: PixelDocument,
     gridCoords: Position,
     activeToolName: string,
     penSize: number,
@@ -17,7 +17,7 @@ export default class CursorOverlayRenderer {
   ) {
     // Only render hover inside bounds and when not actively panning
     if (
-      !document.isWithinBounds(gridCoords.x, gridCoords.y) ||
+      !doc.isWithinBounds(gridCoords.x, gridCoords.y) ||
       activeToolName === "pan" ||
       activeToolName === "eyedropper"
     ) return;

@@ -1,4 +1,5 @@
-import { type WebComponent, WebComponentBase, customElement, html } from "@modules/web-component-utils";
+import { type WebComponent, WebComponentBase, customElement, html } from "@modules/utils/components";
+import { LayerEvents } from "../types";
 
 /** @private */
 const getLayerItemHtml = html<{ name: string; }>`
@@ -117,10 +118,10 @@ const getLayerItemHtml = html<{ name: string; }>`
 @customElement("layer-item")
 export default class LayerItem extends WebComponentBase({ mode: "open" }, { abstract: true }) implements WebComponent {
   static get observedAttributes() {
-    return ["name"];
+    return ["name", "uuid"];
   }
 
-  private _title: HTMLElement;
+  private _name: HTMLElement;
   private _dragHandle: HTMLElement;
   private _visibilityBtn: HTMLElement;
   private _contextMenuBtn: HTMLElement;
@@ -132,24 +133,43 @@ export default class LayerItem extends WebComponentBase({ mode: "open" }, { abst
   constructor() {
     super();
 
-    this._shadowRoot.innerHTML = getLayerItemHtml({ name: this.displayName });
+    this._shadowRoot.innerHTML = getLayerItemHtml({ name: this.name });
 
-    this._title = this._shadowRoot.querySelector("[data-id=\"title\"]")!;
+    this._name = this._shadowRoot.querySelector("[data-id=\"title\"]")!;
     this._dragHandle = this._shadowRoot.querySelector("[data-id=\"drag-handle\"]")!;
     this._visibilityBtn = this._shadowRoot.querySelector("[data-id=\"visibility-btn\"]")!;
     this._contextMenuBtn = this._shadowRoot.querySelector("[data-id=\"context-menu-btn\"]")!;
   }
 
-  get displayName(): string {
+  get name(): string {
     return this.getAttribute("name") || "Anonymous Layer";
   }
 
-  set displayName(value: string | null) {
-    this._title.textContent = value || "Anonymous Layer";
+  set name(value: string | null) {
+    value = value || "Anonymous Layer";
+
+    this._name.textContent = value;
+    this.setAttribute("name", value);
+  }
+
+  get uuid() {
+    return this.getAttribute("uuid")!;
+  }
+
+  set uuid(value: string) {
+    this.setAttribute("uuid", value);
   }
 
   get active() {
     return this.hasAttribute("active") ?? false;
+  }
+
+  get visible() {
+    return !this.hasAttribute("is-hidden");
+  }
+
+  set visible(value: boolean) {
+    this.toggleAttribute("is-hidden", !value);
   }
 
   get requestedDragging() {
@@ -157,6 +177,10 @@ export default class LayerItem extends WebComponentBase({ mode: "open" }, { abst
   }
 
   connectedCallback(): void {
+    if (!this.uuid) {
+      console.warn(`LayerItem initialized without an UUID! This could have unexpected out of sync errors and state mismatch!`);
+    }
+
     this._abortController = new AbortController();
     const { signal } = this._abortController;
 
@@ -172,7 +196,11 @@ export default class LayerItem extends WebComponentBase({ mode: "open" }, { abst
 
   attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null): void {
     if (name === "name" && oldValue !== newValue) {
-      this.displayName = newValue;
+      this.name = newValue;
+    }
+
+    if (name === "uuid" && newValue && oldValue !== newValue) {
+      this.uuid = newValue;
     }
   }
 
@@ -180,7 +208,12 @@ export default class LayerItem extends WebComponentBase({ mode: "open" }, { abst
     this._visibilityBtn.addEventListener("click", (ev: PointerEvent) => {
       ev.preventDefault();
       this._stopPropagation(ev);
-      this.toggleAttribute("is-hidden");
+      const visible = this.visible = !this.visible;
+      this.dispatchEvent(new CustomEvent(LayerEvents.VisibilityChange, {
+        bubbles: true,
+        composed: true,
+        detail: { id: this.uuid, visible }
+      }))
     }, { signal });
 
     this._visibilityBtn.addEventListener("pointerdown", this._stopPropagation);
@@ -212,21 +245,21 @@ export default class LayerItem extends WebComponentBase({ mode: "open" }, { abst
     this._contextMenuBtn.addEventListener("pointercancel", this._stopPropagation, { signal });
   }
 
-private _attachClickListeners(signal: AbortSignal) {
-  const layerDiv = this._shadowRoot.querySelector(".layer")! as HTMLElement;
+  private _attachClickListeners(signal: AbortSignal) {
+    const layerDiv = this._shadowRoot.querySelector(".layer")! as HTMLElement;
 
-  layerDiv.addEventListener("click", (ev: PointerEvent) => {
-    const target = ev.target as HTMLElement;
-    // Ignore button clicks
-    if (target.closest("button")) return;
+    layerDiv.addEventListener("click", (ev: PointerEvent) => {
+      const target = ev.target as HTMLElement;
+      // Ignore button clicks
+      if (target.closest("button")) return;
 
-    this.dispatchEvent(new CustomEvent("layer-item:select", {
-      bubbles: true,
-      composed: true,
-      detail: this
-    }));
-  }, { signal });
-}
+      this.dispatchEvent(new CustomEvent(LayerEvents.Select, {
+        bubbles: true,
+        composed: true,
+        detail: this
+      }));
+    }, { signal });
+  }
 
   private _stopPropagation<T extends Event>(ev: T) {
     ev.stopPropagation();

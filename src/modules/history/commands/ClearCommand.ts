@@ -4,16 +4,16 @@ import Command from "@modules/history/commands/Command";
 
 export default class ClearCommand extends Command {
   constructor(
-    document: PixelDocument,
+    doc: PixelDocument,
     protected readonly changes: [string, PixelChange[]][]
   ) {
-    super(document);
+    super(doc);
   }
 
   execute(): void {
     for (const [layerId, pixels] of this.changes) {
       for (const { x, y, newColor } of pixels) {
-        this.document.setPixelData(x, y, newColor, layerId);
+        this.doc.setPixelData(x, y, newColor, layerId);
       }
     }
   }
@@ -21,7 +21,7 @@ export default class ClearCommand extends Command {
   undo(): void {
     for (const [layerId, pixels] of this.changes) {
       for (const { x, y, oldColor } of pixels) {
-        this.document.setPixelData(x, y, oldColor, layerId);
+        this.doc.setPixelData(x, y, oldColor, layerId);
       }
     }
   }

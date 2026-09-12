@@ -8,8 +8,8 @@ export default class EyeDropperTool extends Tool {
     super("eyedropper");
   }
 
-  onMouseDown({ x, y }: Position, { document }: ToolContext) {
-    const color = document.getPixelData(x, y);
+  onMouseDown({ x, y }: Position, { doc }: ToolContext) {
+    const color = doc.getPixelData(x, y);
     GlobalEmitter.emit(ApplicationEventTypes.PickColor, { color, trySwitchTool: true });
   }
 }

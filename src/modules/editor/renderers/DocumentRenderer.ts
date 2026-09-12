@@ -7,13 +7,13 @@ export default class DocumentRenderer {
     private camera: Camera
   ) { }
 
-  render(document: PixelDocument) {
+  render(doc: PixelDocument) {
     // Render all visible layers from bottom to top
-    for (const layer of document.layers) {
+    for (const layer of doc.layers) {
       if (!layer.visible) continue;
 
-      for (let y = 0; y < document.height; y++) {
-        for (let x = 0; x < document.width; x++) {
+      for (let y = 0; y < doc.height; y++) {
+        for (let x = 0; x < doc.width; x++) {
           const color = layer.getPixelData(x, y);
 
           if (color) {
@@ -27,6 +27,6 @@ export default class DocumentRenderer {
     // Draw Workspace Canvas Border
     this.context.strokeStyle = "rgba(255, 255, 255, 0.15)";
     this.context.lineWidth = 2 / this.camera.zoom;
-    this.context.strokeRect(0, 0, document.width, document.height);
+    this.context.strokeRect(0, 0, doc.width, doc.height);
   }
 }

@@ -1,5 +1,10 @@
-import { type WebComponent, WebComponentBase, customElement, html } from "@modules/web-component-utils";
-import LayerItem from "./LayerItem";
+import { type WebComponent, WebComponentBase, customElement, html } from "@modules/utils/components";
+import LayerItem from "./layer-item";
+import { LayerEventName, LayerEvents, type LayerEventPayload } from "../types";
+
+export type LayersManagerEventMap<T extends LayerEventName = LayerEventName> = HTMLElementEventMap & {
+  [EventName in T]: CustomEvent<LayerEventPayload<EventName>>;
+};
 
 /** @private */
 const getLayersManagerHtml = html<{ isExpanded: boolean; }>`
@@ -137,7 +142,7 @@ const getLayersManagerHtml = html<{ isExpanded: boolean; }>`
 `;
 
 @customElement("layer-manager")
-export default class LayerManager extends WebComponentBase({ mode: "open" }, { abstract: true }) implements WebComponent {
+export default class LayersManager extends WebComponentBase({ mode: "open" }, { abstract: true }) implements WebComponent {
   private _isExpanded: boolean = true;
   private _isDragging: boolean = false;
 
@@ -220,7 +225,7 @@ export default class LayerManager extends WebComponentBase({ mode: "open" }, { a
     // Reorder children
     this._initLayersReorder(signal);
     // Toggle active child
-    this.addEventListener("layer-item:select", this._handlerLayerSelect as EventListener, { signal });
+    this.addEventListener(LayerEvents.Select, this._handlerLayerSelect, { signal });
 
     // Stop propagation
     this.addEventListener("click", this._stopPropagation, { signal });
@@ -429,9 +434,9 @@ export default class LayerManager extends WebComponentBase({ mode: "open" }, { a
    * is still somehow affected/concerned by the abort event of the AbortSignal triggering.
    */
   private _onAbortSignalAborted() {
-      this._dragHandle.addEventListener("pointermove", this._drag);
-      this._dragHandle.addEventListener("pointerup", this._dragEnd);
-      this._dragHandle.addEventListener("pointercancel", this._dragEnd);
+    this._dragHandle.addEventListener("pointermove", this._drag);
+    this._dragHandle.addEventListener("pointerup", this._dragEnd);
+    this._dragHandle.addEventListener("pointercancel", this._dragEnd);
   }
 
   private _initLayersReorder(signal: AbortSignal) {
@@ -550,6 +555,10 @@ export default class LayerManager extends WebComponentBase({ mode: "open" }, { a
       this._draggedItem.classList.remove("dragging");
 
       cancelAnimationFrame(this._scrollAnimFrame!);
+
+      this.dispatchEvent(
+        new CustomEvent(LayerEvents.Reorder, { bubbles: true, composed: true })
+      );
     }
 
     this._draggedItem = null;
@@ -645,13 +654,78 @@ export default class LayerManager extends WebComponentBase({ mode: "open" }, { a
     }
   }
 
-  private _handlerLayerSelect(ev: CustomEvent<LayerItem>) {
+  private _handlerLayerSelect(ev: CustomEvent<LayerEventPayload<typeof LayerEvents.Select>>) {
     const selectedElement = ev.detail;
+    this._toggleSelectedLayer(selectedElement);
 
-    if (this._draggedItem === selectedElement) return;
+    this.dispatchEvent(
+      new CustomEvent(
+        LayerEvents.Selected,
+        {
+          bubbles: true,
+          composed: true,
+          detail: {
+            id: selectedElement.uuid,
+            name: selectedElement.name
+          }
+        }
+      )
+    );
+  }
+
+  private _toggleSelectedLayer(selected: LayerItem) {
+    if (this._draggedItem === selected) return;
 
     this.querySelectorAll("layer-item").forEach((layer) => {
-      layer.toggleAttribute("active", selectedElement === layer);
+      layer.toggleAttribute("active", selected === layer);
     });
+  }
+
+  public addNewLayer({
+    id,
+    name,
+    active = false,
+    visible = true,
+  }: {
+    id: string;
+    name?: string;
+    active?: boolean;
+    visible?: boolean;
+  }) {
+    const layer = document.createElement("layer-item");
+
+    layer.uuid = id;
+    if (name) layer.name = name;
+    if (!visible) layer.visible = visible;
+
+    this.append(layer);
+
+    if (active) this._toggleSelectedLayer(layer);
+  }
+
+  public addEventListener<K extends keyof LayersManagerEventMap>(
+    type: K,
+    listener: (this: LayersManager, event: LayersManagerEventMap[K]) => void,
+    options?: boolean | AddEventListenerOptions
+  ): void;
+  public addEventListener(
+    type: string,
+    listener: EventListenerOrEventListenerObject,
+    options?: boolean | AddEventListenerOptions
+  ) {
+    super.addEventListener(type, listener, options);
+  }
+
+  public removeEventListener<K extends keyof LayersManagerEventMap>(
+    type: K,
+    listener: (this: LayersManager, event: LayersManagerEventMap[K]) => void,
+    options?: boolean | AddEventListenerOptions
+  ): void;
+  public removeEventListener(
+    type: string,
+    listener: EventListenerOrEventListenerObject,
+    options?: boolean | AddEventListenerOptions
+  ) {
+    super.removeEventListener(type, listener, options);
   }
 }

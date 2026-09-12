@@ -141,7 +141,7 @@ export default class UIManager {
     );
 
     applicationStore.select(
-      (state) => state.document.size,
+      (state) => state.doc.size,
       ({ width, height }) => this.updateDocumentSizeUI(width, height)
     );
   }

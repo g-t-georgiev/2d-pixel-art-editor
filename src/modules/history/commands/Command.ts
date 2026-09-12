@@ -3,7 +3,7 @@ import type PixelDocument from "@modules/editor/core/PixelDocument";
 
 export default abstract class Command implements ICommand {
   constructor(
-    protected readonly document: PixelDocument
+    protected readonly doc: PixelDocument
   ) { }
 
   abstract execute(): void;

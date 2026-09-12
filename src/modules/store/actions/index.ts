@@ -70,7 +70,7 @@ export const documetnResizeAction = defineAction<
   schema: documentResizeSchema,
   reducer(state, payload) {
     const { width, height } = payload;
-    state.document.size.width = width;
-    state.document.size.height = height;
+    state.doc.size.width = width;
+    state.doc.size.height = height;
   },
 });

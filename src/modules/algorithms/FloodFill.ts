@@ -3,20 +3,20 @@ import type PixelDocument from "@modules/editor/core/PixelDocument";
 
 export default class FloodFill {
   static execute(
-    document: PixelDocument,
+    doc: PixelDocument,
     startX: number,
     startY: number,
     color: Color
   ) {
     const affectedPixels: PixelChange[] = [];
 
-    if (!document.isWithinBounds(startX, startY)) return affectedPixels;
+    if (!doc.isWithinBounds(startX, startY)) return affectedPixels;
 
-    const startColor = document.getPixelData(startX, startY);
+    const startColor = doc.getPixelData(startX, startY);
     if (startColor === color) return affectedPixels;
 
-    const width = document.width;
-    const height = document.height;
+    const width = doc.width;
+    const height = doc.height;
 
     const stack: number[] = [startX, startY];
 
@@ -26,15 +26,15 @@ export default class FloodFill {
 
       let currentX = x;
 
-      while (currentX >= 0 && document.getPixelData(currentX, y) === startColor) currentX--;
+      while (currentX >= 0 && doc.getPixelData(currentX, y) === startColor) currentX--;
 
       currentX++;
 
       let spanAbove = false;
       let spanBelow = false;
 
-      while (currentX < width && document.getPixelData(currentX, y) === startColor) {
-        document.setPixelData(currentX, y, color);
+      while (currentX < width && doc.getPixelData(currentX, y) === startColor) {
+        doc.setPixelData(currentX, y, color);
 
         affectedPixels.push({
           x: currentX,
@@ -45,7 +45,7 @@ export default class FloodFill {
 
         // Check row above
         if (y > 0) {
-          const colorAbove = document.getPixelData(currentX, y - 1);
+          const colorAbove = doc.getPixelData(currentX, y - 1);
           if (!spanAbove && colorAbove === startColor) {
             stack.push(currentX, y - 1);
             spanAbove = true;
@@ -56,7 +56,7 @@ export default class FloodFill {
 
         // Check row below
         if (y < height - 1){
-          const colorBelow = document.getPixelData(currentX, y + 1);
+          const colorBelow = doc.getPixelData(currentX, y + 1);
           if (!spanBelow && colorBelow === startColor) {
             stack.push(currentX, y + 1);
             spanBelow = true;

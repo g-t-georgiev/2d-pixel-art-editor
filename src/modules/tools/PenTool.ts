@@ -40,12 +40,12 @@ export default class PenTool extends Tool {
 
   onMouseUp(
     _coords: Position,
-    { document, history }: ToolContext
+    { doc, history }: ToolContext
   ) {
     this.lastCoords = null;
 
-    if (this.currentStroke.length > 0 && document.activeLayerId) {
-      history.record(new DrawCommand(document, document.activeLayerId, this.currentStroke));
+    if (this.currentStroke.length > 0 && doc.activeLayerId) {
+      history.record(new DrawCommand(doc, doc.activeLayerId, this.currentStroke));
     }
 
     this.currentStroke = [];
@@ -53,7 +53,7 @@ export default class PenTool extends Tool {
 
   private drawPoint(
     { x, y }: Position,
-    { document, color, size }: ToolContext
+    { doc, color, size }: ToolContext
   ) {
     const halfSize = Math.floor(size / 2);
 
@@ -62,9 +62,9 @@ export default class PenTool extends Tool {
         const px = x - halfSize + dx;
         const py = y - halfSize + dy;
 
-        if (!document.isWithinBounds(px, py)) continue;
+        if (!doc.isWithinBounds(px, py)) continue;
 
-        const oldColor = document.getPixelData(px, py);
+        const oldColor = doc.getPixelData(px, py);
 
         if (oldColor === color) continue;
 
@@ -75,7 +75,7 @@ export default class PenTool extends Tool {
           newColor: color,
         });
 
-        document.setPixelData(px, py, color);
+        doc.setPixelData(px, py, color);
       }
     }
   }

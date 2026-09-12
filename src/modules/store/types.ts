@@ -26,7 +26,7 @@ export interface ApplicationState {
     zoom: number;
     position: Position;
   };
-  document: {
+  doc: {
     size: { width: number; height: number; };
   };
   preferences: {

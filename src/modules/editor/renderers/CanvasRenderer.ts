@@ -23,7 +23,7 @@ export default class CanvasRenderer {
 
   constructor(
     public app: Application,
-    private document: PixelDocument,
+    private doc: PixelDocument,
     private tools: ToolManager,
     private canvas: HTMLCanvasElement,
     private camera: Camera,
@@ -64,9 +64,9 @@ export default class CanvasRenderer {
     this.context.translate(this.camera.x, this.camera.y);
     this.context.scale(this.camera.zoom, this.camera.zoom);
 
-    this.backgroundRenderer.render(this.document.width, this.document.height);
-    this.documentRenderer.render(this.document);
-    this.gridOverlayRenderer.render(this.document);
+    this.backgroundRenderer.render(this.doc.width, this.doc.height);
+    this.documentRenderer.render(this.doc);
+    this.gridOverlayRenderer.render(this.doc);
 
     if (!isDrawing) {
       // Hover Preview overlay
@@ -78,7 +78,7 @@ export default class CanvasRenderer {
       );
       const gridCoords = this.camera.worldToGrid(worldX, worldY);
       const activeToolName = this.tools.getActiveTool()?.name;
-      this.cursorOverlayRenderer.render(this.document, gridCoords, activeToolName, penSize, currentColor);
+      this.cursorOverlayRenderer.render(this.doc, gridCoords, activeToolName, penSize, currentColor);
     }
 
     this.context.restore(); // Exit camera space, back to CSS screen space

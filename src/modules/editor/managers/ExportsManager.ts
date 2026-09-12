@@ -2,18 +2,18 @@ import type PixelDocument from "../core/PixelDocument";
 import ColorUtils from "../../utils/ColorUtils";
 
 export default class ExportsManager {
-  exportPNG(document: PixelDocument) {
+  exportPNG(doc: PixelDocument) {
     const { canvas, context } = this.createOffscreenCanvas();
 
-    canvas.width = document.width;
-    canvas.height = document.height;
+    canvas.width = doc.width;
+    canvas.height = doc.height;
 
-    const imgData = context.createImageData(document.width, document.height);
+    const imgData = context.createImageData(doc.width, doc.height);
 
-    for (let y = 0; y < document.height; y++) {
-      for (let x = 0; x < document.width; x++) {
-        const color = document.getPixelData(x, y);
-        const i = (y * document.width + x) * 4;
+    for (let y = 0; y < doc.height; y++) {
+      for (let x = 0; x < doc.width; x++) {
+        const color = doc.getPixelData(x, y);
+        const i = (y * doc.width + x) * 4;
         const rgba = ColorUtils.hexToRgba(color);
 
         imgData.data[i] = rgba.r;
@@ -25,7 +25,7 @@ export default class ExportsManager {
 
     context.putImageData(imgData, 0, 0);
 
-    this.startDownload(canvas, document.width, document.height);
+    this.startDownload(canvas, doc.width, doc.height);
   }
 
   private createOffscreenCanvas() {

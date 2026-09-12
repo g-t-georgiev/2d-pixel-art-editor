@@ -17,7 +17,7 @@ const initialState: ApplicationState = {
     zoom: 1,
     position: { x: 0, y: 0 },
   },
-  document: {
+  doc: {
     size: { width: 16, height: 16 }
   },
   preferences: {

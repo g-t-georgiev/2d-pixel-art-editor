@@ -1,7 +1,6 @@
 import type { Color, PixelChange } from "@modules/types";
 
 export default class PixelDocumentLayer {
-  visible: boolean = true;
   opacity: number = 1;
   grid: Array<Color>;
 
@@ -9,7 +8,8 @@ export default class PixelDocumentLayer {
     readonly id: string,
     readonly name: string,
     public width: number,
-    public height: number
+    public height: number,
+    public visible: boolean = true,
   ) {
     this.grid = new Array(width * height).fill(null);
   }

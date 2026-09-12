@@ -12,9 +12,6 @@ export default class PixelDocument {
   ) {
     this.width = width;
     this.height = height;
-
-    // Initialize the default document state
-    this.addLayer("Layer 1");
   }
 
   /** Resizes the document and safely maps existing pixel data to the new grid dimensions. */
@@ -65,10 +62,34 @@ export default class PixelDocument {
     return clearedLayers;
   }
 
-  addLayer(name: string) {
-    const layer = new PixelDocumentLayer(`layer_${++this.layerIdCounter}`, name, this.width, this.height);
+  addLayer({
+    id,
+    name,
+    active = false,
+    visible = true,
+  }: {
+    id?: string;
+    name?: string;
+    active?: boolean;
+    visible?: boolean;
+  } = {}) {
+    const uuid = ++this.layerIdCounter;
+
+    id = id || `layer_${uuid}`;
+    name = name || `Layer ${uuid}`;
+
+    const layer = new PixelDocumentLayer(
+      id,
+      name,
+      this.width,
+      this.height,
+      visible
+    );
+
     this.layers.push(layer);
-    this.activeLayerId = layer.id;
+
+    if (active || !this.activeLayerId) this.activeLayerId = layer.id;
+
     return layer;
   }
 

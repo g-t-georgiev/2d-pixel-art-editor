@@ -1,5 +1,7 @@
+// Register web components
 import "color-picker";
 import "@modules/layers";
+
 import Application from "@modules/editor/Application";
 
 window.addEventListener("DOMContentLoaded", () => {
@@ -9,7 +11,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const application = new Application(canvasElement);
 
-  // Development only
-  // @ts-ignore
+  // @ts-ignore Development only
   window.__pixelEditor__ = application;
 });

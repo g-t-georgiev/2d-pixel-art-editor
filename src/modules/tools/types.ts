@@ -11,7 +11,7 @@ export interface ITool {
 }
 
 export type ToolContext = {
-  document: PixelDocument;
+  doc: PixelDocument;
   history: HistoryManager;
   color: Color;
   size: number;

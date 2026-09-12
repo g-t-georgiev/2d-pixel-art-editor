@@ -9,6 +9,7 @@ import { ToolManager } from "@modules/tools";
 import ExportsManager from "@modules/editor/managers/ExportsManager";
 import { HistoryManager, ClearCommand, ResizeCommand } from "@modules/history";
 import { ApplicationStateActions, applicationStore } from "@modules/store";
+import LayersController from "@modules/layers/LayersController";
 
 export default class Application {
   isDrawing = false;
@@ -18,12 +19,13 @@ export default class Application {
   readonly camera: Camera;
   readonly renderer: CanvasRenderer;
   readonly history: HistoryManager;
-  readonly document: PixelDocument;
+  readonly doc: PixelDocument;
   readonly tools: ToolManager;
   readonly ui: UIManager;
   readonly input: InputController;
   readonly exports: ExportsManager;
   readonly events = GlobalEmitter;
+  readonly layersController: LayersController;
 
   private canvasContainer: HTMLElement;
 
@@ -31,16 +33,16 @@ export default class Application {
     this.canvasContainer = canvas.parentElement!;
 
     this.camera = new Camera();
-    this.document = new PixelDocument(16, 16);
+    this.doc = new PixelDocument(16, 16);
 
     this.history = new HistoryManager();
 
     this.ui = new UIManager(this);
-    this.tools = new ToolManager(this, this.document, this.history);
+    this.tools = new ToolManager(this, this.doc, this.history);
 
     this.renderer = new CanvasRenderer(
       this,
-      this.document,
+      this.doc,
       this.tools,
       this.canvas,
       this.camera
@@ -58,10 +60,16 @@ export default class Application {
 
     this.exports = new ExportsManager();
 
+    this.layersController = new LayersController(this.canvasContainer, this.doc);
+    this.layersController.addNewLayer({ name: "Highlights" });
+    this.layersController.addNewLayer({ name: "Character Base", active: true });
+    this.layersController.addNewLayer({ name: "Background", visible: false });
+
     this.renderLoop = this.renderLoop.bind(this);
 
     this.attachCustomEventListeners();
     this.attachStateChangeListeners();
+
     this.setupResizeObserver();
     this.startLoop();
   }
@@ -90,9 +98,9 @@ export default class Application {
 
   attachStateChangeListeners() {
     applicationStore.select(
-      (state) => state.document.size,
+      (state) => state.doc.size,
       ({ width, height }) => {
-        this.document.resize(width, height);
+        this.doc.resize(width, height);
         this.fitToView();
       }
     );
@@ -131,7 +139,7 @@ export default class Application {
         } else {
           // Re-center the camera on the saved focal point using new dimensions
           this.camera.centerOnWorld(focalWorldX, focalWorldY, cssWidth, cssHeight);
-          this.camera.clamp(cssWidth, cssHeight, this.document.width, this.document.height);
+          this.camera.clamp(cssWidth, cssHeight, this.doc.width, this.doc.height);
         }
       }
     });
@@ -140,17 +148,17 @@ export default class Application {
   }
 
   clearDocument() {
-    const clearedLayers = this.document.clear();
+    const clearedLayers = this.doc.clear();
 
     if (!clearedLayers.length) return;
 
-    this.history.record(new ClearCommand(this.document, clearedLayers));
+    this.history.record(new ClearCommand(this.doc, clearedLayers));
   }
 
   resizeDocument(width: number, height: number) {
     const oldSize = {
-      width: this.document.width,
-      height: this.document.height
+      width: this.doc.width,
+      height: this.doc.height
     };
 
     if (oldSize.width === width && oldSize.height === height) return;
@@ -168,8 +176,8 @@ export default class Application {
     this.camera.fitToView(
       this.canvasWidthInCSSPixels,
       this.canvasHeightInCSSPixels,
-      this.document.width,
-      this.document.height
+      this.doc.width,
+      this.doc.height
     );
   }
 
@@ -183,8 +191,8 @@ export default class Application {
       centerY,
       factor,
       rect,
-      this.document.width,
-      this.document.height
+      this.doc.width,
+      this.doc.height
     );
   }
 
@@ -198,8 +206,8 @@ export default class Application {
     this.camera.clamp(
       this.canvasWidthInCSSPixels,
       this.canvasHeightInCSSPixels,
-      this.document.width,
-      this.document.height
+      this.doc.width,
+      this.doc.height
     );
   }
 
@@ -217,8 +225,8 @@ export default class Application {
       posY,
       zoomFactor,
       rect,
-      this.document.width,
-      this.document.height
+      this.doc.width,
+      this.doc.height
     );
 
     if (!clamp) return;
@@ -226,19 +234,19 @@ export default class Application {
     this.camera.clamp(
       this.canvasWidthInCSSPixels,
       this.canvasHeightInCSSPixels,
-      this.document.width,
-      this.document.height
+      this.doc.width,
+      this.doc.height
     );
   }
 
   updateCoordsDisplay(coords: Position) {
-    if (!this.document.isWithinBounds(coords.x, coords.y)) return;
+    if (!this.doc.isWithinBounds(coords.x, coords.y)) return;
 
     this.ui.updateStatus(coords, this.camera.zoom);
   }
 
   exportPNG() {
-    this.exports.exportPNG(this.document);
+    this.exports.exportPNG(this.doc);
   }
 
   startLoop() {

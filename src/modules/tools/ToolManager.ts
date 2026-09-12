@@ -1,6 +1,6 @@
 import type { Position } from "@modules/types";
 import type Application from "@modules/editor/Application";
-import type { ITool, Tools } from "@modules/tools/types";
+import type { ITool, ToolContext, Tools } from "@modules/tools/types";
 import type PixelDocument from "@modules/editor/core/PixelDocument";
 import type HistoryManager from "@modules/history/HistoryManager";
 import { PointerEventType } from "@modules/editor/controllers/InputController";
@@ -12,7 +12,7 @@ export default class ToolManager {
 
   constructor(
     private app: Application,
-    private document: PixelDocument,
+    private doc: PixelDocument,
     private history: HistoryManager
   ) {
     this.tools = {
@@ -42,7 +42,7 @@ export default class ToolManager {
     action: PointerEventType = PointerEventType.Down,
     coords: Position
   ) {
-    const layer = this.document.getActiveLayer();
+    const layer = this.doc.getActiveLayer();
 
     if (!layer?.visible) return;
 
@@ -54,8 +54,8 @@ export default class ToolManager {
     const colotToUse = tool.name === "eraser" ? null : currentColor;
 
     // Create a standardized payload containing only what tools need to operate
-    const context = {
-      document: this.document,
+    const context: ToolContext = {
+      doc: this.doc,
       history: this.history,
       color: colotToUse,
       size: penSize,

@@ -9,11 +9,11 @@ export default class BucketTool extends Tool {
     super("bucket");
   }
 
-  onMouseDown({ x, y }: Position, { document, history, color }: ToolContext) {
-    const changes = FloodFill.execute(document, x, y, color);
+  onMouseDown({ x, y }: Position, { doc, history, color }: ToolContext) {
+    const changes = FloodFill.execute(doc, x, y, color);
 
-    if (!changes.length || !document.activeLayerId) return;
+    if (!changes.length || !doc.activeLayerId) return;
 
-    history.record(new DrawCommand(document, document.activeLayerId, changes));
+    history.record(new DrawCommand(doc, doc.activeLayerId, changes));
   }
 }

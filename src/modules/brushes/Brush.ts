@@ -4,13 +4,13 @@ abstract class Brush {
   size = 1;
 
   paint(
-    document: PixelDocument,
+    doc: PixelDocument,
     x: number,
     y: number,
     color: string
   ) {
     //
-    console.log(document, x, y, color);
+    console.log(doc, x, y, color);
   }
 }
 
