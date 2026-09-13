@@ -1,6 +1,8 @@
 import type { WebComponent, WebComponentBaseOptions } from "./types";
 
-export default function WebComponentBase(
+export default function WebComponentBase<
+  EventMap extends HTMLElementEventMap = HTMLElementEventMap
+>(
   shadowRootInit: ShadowRootInit,
   options: WebComponentBaseOptions
 ) {
@@ -15,6 +17,32 @@ export default function WebComponentBase(
       }
 
       this._shadowRoot = this.attachShadow(shadowRootInit);
+    }
+
+    public addEventListener<K extends keyof EventMap>(
+      type: K,
+      listener: (this: this, event: EventMap[K]) => void,
+      options?: boolean | AddEventListenerOptions
+    ): void;
+    public addEventListener(
+      type: string,
+      listener: EventListenerOrEventListenerObject,
+      options?: boolean | AddEventListenerOptions
+    ) {
+      super.addEventListener(type, listener, options);
+    }
+
+    public removeEventListener<K extends keyof EventMap>(
+      type: K,
+      listener: (this: this, event: EventMap[K]) => void,
+      options?: boolean | AddEventListenerOptions
+    ): void;
+    public removeEventListener(
+      type: string,
+      listener: EventListenerOrEventListenerObject,
+      options?: boolean | AddEventListenerOptions
+    ) {
+      super.removeEventListener(type, listener, options);
     }
   }
 }

@@ -115,8 +115,10 @@ const getLayerItemHtml = html<{ name: string; }>`
   </div>
 `;
 
+const LayerItemBase = WebComponentBase({ mode: "open" }, { abstract: true });
+
 @customElement("layer-item")
-export default class LayerItem extends WebComponentBase({ mode: "open" }, { abstract: true }) implements WebComponent {
+export default class LayerItem extends LayerItemBase implements WebComponent {
   static get observedAttributes() {
     return ["name", "uuid"];
   }

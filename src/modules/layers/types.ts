@@ -26,3 +26,7 @@ export type LayerEventPayloads = {
 
 export type LayerEventName = typeof LayerEvents[keyof typeof LayerEvents];
 export type LayerEventPayload<T extends LayerEventName> = LayerEventPayloads[T];
+
+export type LayersManagerEventMap<T extends LayerEventName = LayerEventName> = HTMLElementEventMap & {
+  [EventName in T]: CustomEvent<LayerEventPayload<EventName>>;
+};

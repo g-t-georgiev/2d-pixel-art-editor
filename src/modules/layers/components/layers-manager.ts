@@ -1,10 +1,6 @@
 import { type WebComponent, WebComponentBase, customElement, html } from "@modules/utils/components";
 import LayerItem from "./layer-item";
-import { LayerEventName, LayerEvents, type LayerEventPayload } from "../types";
-
-export type LayersManagerEventMap<T extends LayerEventName = LayerEventName> = HTMLElementEventMap & {
-  [EventName in T]: CustomEvent<LayerEventPayload<EventName>>;
-};
+import { LayerEvents, type LayerEventPayload, type LayersManagerEventMap } from "../types";
 
 /** @private */
 const getLayersManagerHtml = html<{ isExpanded: boolean; }>`
@@ -141,8 +137,10 @@ const getLayersManagerHtml = html<{ isExpanded: boolean; }>`
   </div>
 `;
 
+const LayersManagerBase = WebComponentBase<LayersManagerEventMap>({ mode: "open" }, { abstract: true });
+
 @customElement("layer-manager")
-export default class LayersManager extends WebComponentBase({ mode: "open" }, { abstract: true }) implements WebComponent {
+export default class LayersManager extends LayersManagerBase implements WebComponent {
   private _isExpanded: boolean = true;
   private _isDragging: boolean = false;
 
@@ -658,19 +656,19 @@ export default class LayersManager extends WebComponentBase({ mode: "open" }, { 
     const selectedElement = ev.detail;
     this._toggleSelectedLayer(selectedElement);
 
-    this.dispatchEvent(
-      new CustomEvent(
-        LayerEvents.Selected,
-        {
-          bubbles: true,
-          composed: true,
-          detail: {
-            id: selectedElement.uuid,
-            name: selectedElement.name
-          }
+    const selectedEvent: CustomEvent<LayerEventPayload<typeof LayerEvents.Selected>> = new CustomEvent(
+      LayerEvents.Selected,
+      {
+        bubbles: true,
+        composed: true,
+        detail: {
+          id: selectedElement.uuid,
+          name: selectedElement.name
         }
-      )
+      }
     );
+
+    this.dispatchEvent(selectedEvent);
   }
 
   private _toggleSelectedLayer(selected: LayerItem) {
@@ -701,31 +699,5 @@ export default class LayersManager extends WebComponentBase({ mode: "open" }, { 
     this.append(layer);
 
     if (active) this._toggleSelectedLayer(layer);
-  }
-
-  public addEventListener<K extends keyof LayersManagerEventMap>(
-    type: K,
-    listener: (this: LayersManager, event: LayersManagerEventMap[K]) => void,
-    options?: boolean | AddEventListenerOptions
-  ): void;
-  public addEventListener(
-    type: string,
-    listener: EventListenerOrEventListenerObject,
-    options?: boolean | AddEventListenerOptions
-  ) {
-    super.addEventListener(type, listener, options);
-  }
-
-  public removeEventListener<K extends keyof LayersManagerEventMap>(
-    type: K,
-    listener: (this: LayersManager, event: LayersManagerEventMap[K]) => void,
-    options?: boolean | AddEventListenerOptions
-  ): void;
-  public removeEventListener(
-    type: string,
-    listener: EventListenerOrEventListenerObject,
-    options?: boolean | AddEventListenerOptions
-  ) {
-    super.removeEventListener(type, listener, options);
   }
 }

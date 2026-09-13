@@ -72,7 +72,6 @@ export default class LayersController {
 
     this.manager.addEventListener(LayerEvents.VisibilityChange, (ev) => {
       const { id, visible } = ev.detail;
-      console.log(id, visible);
       this.toggleVisibility(id, visible);
     }, { signal });
   }

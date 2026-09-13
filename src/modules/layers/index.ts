@@ -1,19 +1,20 @@
 import {
-  LayerEvents as AllLayerEvents,
   type LayerEventPayloads as AllLayerEventPayloads,
   type LayerEventName as AllLayerEventName,
+  type LayersManagerEventMap as LayersManagerAllEventMap,
+  LayerEvents as AllLayerEvents,
 } from "./types";
 
 import "./components/layer-item";
-import LayerItem from "./components/layer-item";
+import { default as _LayerItem } from "./components/layer-item";
 
 import "./components/layers-manager";
-import LayersManager, { type LayersManagerEventMap as LayersManagerAllEventMap } from "./components/layers-manager";
+import { default as _LayersManager } from "./components/layers-manager";
 
 declare global {
   interface HTMLElementTagNameMap {
-    "layer-manager": LayersManager;
-    "layer-item": LayerItem;
+    "layer-manager": _LayersManager;
+    "layer-item": _LayerItem;
   }
 }
 
@@ -23,7 +24,6 @@ declare global {
  *
  * Outer context should refrain from bypassing these and import directly from the modules instead.
  */
-export type { LayerItem, LayersManager };
 
 export type LayerEventName = Exclude<AllLayerEventName, "layer:select">;
 
@@ -37,3 +37,16 @@ export type LayerEventPayloads = Pick<AllLayerEventPayloads, LayerEventName>;
 export type LayerEventPayload<T extends LayerEventName> = LayerEventPayloads[T];
 
 export type LayersManagerEventMap = LayersManagerAllEventMap<LayerEventName>;
+
+// Enforce Public Interfaces by omitting and replacing the event methods
+export interface LayersManager extends Omit<_LayersManager, "addEventListener" | "removeEventListener"> {
+  addEventListener<K extends keyof LayersManagerEventMap>(type: K, listener: (this: LayersManager, ev: LayersManagerEventMap[K]) => void, options?: boolean | AddEventListenerOptions): void;
+  addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+  removeEventListener<K extends keyof LayersManagerEventMap>(type: K, listener: (this: LayersManager, ev: LayersManagerEventMap[K]) => void, options?: boolean | EventListenerOptions): void;
+  removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
+
+export interface LayerItem extends Omit<_LayerItem, "addEventListener" | "removeEventListener"> {
+  addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions): void;
+  removeEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
+}
