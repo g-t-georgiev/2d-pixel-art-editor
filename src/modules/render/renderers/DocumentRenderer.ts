@@ -1,5 +1,5 @@
-import type Camera from "../Camera";
-import type PixelDocument from "../core/PixelDocument";
+import type Camera from "@modules/Camera";
+import type PixelDocument from "@modules/PixelDocument";
 
 export default class DocumentRenderer {
   constructor(

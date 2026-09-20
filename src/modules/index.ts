@@ -1,8 +1,8 @@
 // Register web components
 import "color-picker";
-import "@modules/layers";
+import "@modules/ui/components";
 
-import Application from "@modules/editor/Application";
+import Application from "@modules/Application";
 
 window.addEventListener("DOMContentLoaded", () => {
   const canvasElement = document.querySelector<HTMLCanvasElement>("#paintCanvas");

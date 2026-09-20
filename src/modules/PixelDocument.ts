@@ -1,5 +1,5 @@
 import type { Color, PixelChange } from "@modules/types";
-import PixelDocumentLayer from "@modules/editor/core/PixelDocumentLayer";
+import PixelDocumentLayer from "@modules/PixelDocumentLayer";
 
 export default class PixelDocument {
   layers: PixelDocumentLayer[] = [];

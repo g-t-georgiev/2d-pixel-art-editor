@@ -1,5 +1,5 @@
-import type PixelDocument from "@modules/editor/core/PixelDocument";
-import { LayerEvents, type LayersManager } from "@modules/layers";
+import type PixelDocument from "@modules/PixelDocument";
+import { LayerEvents, type LayersManager } from "@modules/ui/components/layers";
 
 export default class LayersController {
   private manager: LayersManager;

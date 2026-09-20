@@ -1,7 +1,7 @@
 import { ApplicationEventTypes, type Position } from "@modules/types";
 import type { ToolContext } from "@modules/tools/types";
 import Tool from "@modules/tools/Tool";
-import { GlobalEmitter } from "@modules/utils/EventEmitter";
+import { GlobalEmitter } from "@modules/utils";
 
 export default class EyeDropperTool extends Tool {
   constructor() {

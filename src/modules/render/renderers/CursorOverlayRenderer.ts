@@ -1,6 +1,6 @@
 import type { Color, Position } from "@modules/types";
-import type Camera from "@modules/editor/Camera";
-import type PixelDocument from "@modules/editor/core/PixelDocument";
+import type Camera from "@modules/Camera";
+import type PixelDocument from "@modules/PixelDocument";
 
 export default class CursorOverlayRenderer {
   constructor(

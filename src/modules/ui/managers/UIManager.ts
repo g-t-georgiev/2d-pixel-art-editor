@@ -1,5 +1,5 @@
 import type { Color, Position } from "@modules/types";
-import type Application from "@modules/editor/Application";
+import type Application from "@modules/Application";
 import type { ToolType } from "@modules/tools";
 import type { ColorChangeEventShape, ColorPickerButton } from "color-picker";
 import { applicationStore, ApplicationStateActions } from "@modules/store";

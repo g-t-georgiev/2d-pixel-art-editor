@@ -1,7 +1,7 @@
 import type { Position } from "@modules/types";
-import type Application from "@modules/editor/Application";
-import type Camera from "@modules/editor/Camera";
-import type CanvasRenderer from "@modules/editor/renderers/CanvasRenderer";
+import type Application from "@modules/Application";
+import type Camera from "@modules/Camera";
+import { type CanvasRenderer } from "@modules/render";
 import type { ToolManager } from "@modules/tools";
 import type { HistoryManager } from "@modules/history";
 import { ApplicationStateActions, applicationStore } from "@modules/store";

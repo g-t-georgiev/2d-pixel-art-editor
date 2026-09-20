@@ -1,5 +1,5 @@
-import type PixelDocument from "../core/PixelDocument";
-import ColorUtils from "../../utils/ColorUtils";
+import type PixelDocument from "@modules/PixelDocument";
+import { ColorUtils } from "@modules/utils";
 
 export default class ExportsManager {
   exportPNG(doc: PixelDocument) {

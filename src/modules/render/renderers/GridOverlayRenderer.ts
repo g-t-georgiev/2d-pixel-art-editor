@@ -1,6 +1,6 @@
-import type Camera from "../Camera";
-import type PixelDocument from "../core/PixelDocument";
-import { applicationStore } from "../../store";
+import type Camera from "@modules/Camera";
+import type PixelDocument from "@modules/PixelDocument";
+import { applicationStore } from "@modules/store";
 
 export default class GridOverlayRenderer {
   constructor(

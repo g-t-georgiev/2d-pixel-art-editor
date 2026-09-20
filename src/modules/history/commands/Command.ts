@@ -1,5 +1,5 @@
 import type { ICommand } from "@modules/history/types";
-import type PixelDocument from "@modules/editor/core/PixelDocument";
+import type PixelDocument from "@modules/PixelDocument";
 
 export default abstract class Command implements ICommand {
   constructor(

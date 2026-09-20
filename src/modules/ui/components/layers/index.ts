@@ -5,11 +5,11 @@ import {
   LayerEvents as AllLayerEvents,
 } from "./types";
 
-import "./components/layer-item";
-import { default as _LayerItem } from "./components/layer-item";
+import "./layer-item";
+import { default as _LayerItem } from "./layer-item";
 
-import "./components/layers-manager";
-import { default as _LayersManager } from "./components/layers-manager";
+import "./layers-manager";
+import { default as _LayersManager } from "./layers-manager";
 
 declare global {
   interface HTMLElementTagNameMap {

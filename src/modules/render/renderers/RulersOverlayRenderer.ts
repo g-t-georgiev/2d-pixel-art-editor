@@ -1,5 +1,5 @@
 import type { Position } from "@modules/types";
-import type Camera from "@modules/editor/Camera";
+import type Camera from "@modules/Camera";
 
 export default class RulersOverlayRenderer {
   private readonly style = {

@@ -21,28 +21,9 @@ root/
 │   │   ├── brushes/
 │   │   │   └── Brush.ts
 │   │   │
-│   │   ├── editor/
-│   │   │   ├── controllers/
-│   │   │   │   └── InputController.ts
-│   │   │   │
-│   │   │   ├── core/
-│   │   │   │   ├── PixelDocument.ts
-│   │   │   │   └── PixelDocumentLayer.ts
-│   │   │   │
-│   │   │   ├── managers/
-│   │   │   │   ├── ExportsManager.ts
-│   │   │   │   └── UIManager.js
-│   │   │   │
-│   │   │   ├── renderers/
-│   │   │   │   ├── BackgroundRenderer.ts
-│   │   │   │   ├── DocumentRenderer.ts
-│   │   │   │   ├── GridOverlayRenderer.ts
-│   │   │   │   ├── RulerOverlayRenderer.ts
-│   │   │   │   ├── CursorOverlayRenderer.ts
-│   │   │   │   └── CanvasRenderer.ts
-│   │   │   │
-│   │   │   ├── Application.ts
-│   │   │   └── Camera.ts
+│   │   ├── export/
+│   │   │   ├── ExportsManager.ts
+│   │   │   └── index.ts
 │   │   │
 │   │   ├── history/
 │   │   │   ├── commands/
@@ -57,10 +38,17 @@ root/
 │   │   │   ├── index.ts
 │   │   │   └── types.ts
 │   │   │
-│   │   ├── layers/
-│   │   │   ├── index.ts
-│   │   │   ├── LayerItem.ts
-│   │   │   └── LayersManager.ts
+│   │   ├── render/
+│   │   │   ├── renderers/
+│   │   │   │   ├── BackgroundRenderer.ts
+│   │   │   │   ├── CursorOverlayRenderer.ts
+│   │   │   │   ├── DocumentRenderer.ts
+│   │   │   │   ├── GridOverlayRenderer.ts
+│   │   │   │   ├── index.ts
+│   │   │   │   └── RulerOverlayRenderer.ts
+│   │   │   │
+│   │   │   ├── CanvasRenderer.ts
+│   │   │   └── index.ts
 │   │   │
 │   │   ├── store/
 │   │   │   ├── actions/
@@ -85,18 +73,44 @@ root/
 │   │   │   ├── toolsExport.ts
 │   │   │   └── types.ts
 │   │   │
+│   │   ├── ui/
+│   │   │   ├── components/
+│   │   │   │   ├── layers/
+│   │   │   │   │   ├─ index.ts
+│   │   │   │   │   ├─ layer-item.ts
+│   │   │   │   │   ├─ layers-manager.ts
+│   │   │   │   │   └── types.ts
+│   │   │   │   │
+│   │   │   │   └── index.ts
+│   │   │   │
+│   │   │   ├── controllers/
+│   │   │   │   ├── index.ts
+│   │   │   │   └── LayersController.ts
+│   │   │   │
+│   │   │   ├── core/
+│   │   │   │   ├── component-utils.ts
+│   │   │   │   ├── index.ts
+│   │   │   │   ├── types.ts
+│   │   │   │   └── WebComponentBase.ts
+│   │   │   │
+│   │   │   ├── managers/
+│   │   │   │   ├── index.ts
+│   │   │   │   └── UIManager.ts
+│   │   │   │
+│   │   │   └── index.ts
+│   │   │
 │   │   ├── utils/
 │   │   │   ├── ColorUtils.ts
 │   │   │   ├── EventEmitter.ts
+│   │   │   ├── index.ts
 │   │   │   └── MathUtils.ts
 │   │   │
-│   │   ├── web-component-utils/
-│   │   │   ├── index.ts
-│   │   │   ├── types.ts
-│   │   │   ├── utils.ts
-│   │   │   └── WebComponentBase.ts
-│   │   │
+│   │   ├── Application.ts
+│   │   ├── Camera.ts
 │   │   ├── index.ts
+│   │   ├── InputController.ts
+│   │   ├── PixelDocument.ts
+│   │   ├── PixelDocumentLayer.ts
 │   │   └── types.js
 │   │
 │   └── styles/

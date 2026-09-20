@@ -1,4 +1,4 @@
-import type LayerItem from "./components/layer-item";
+import type LayerItem from "./layer-item";
 
 export const LayerEvents = {
   /** Used by LayersManager internally to update the selected layer */

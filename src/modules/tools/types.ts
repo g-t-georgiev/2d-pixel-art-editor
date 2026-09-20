@@ -1,6 +1,6 @@
 import type { Color, Position } from "@modules/types";
 import type { PenTool, EraserTool, BucketTool, EyeDropperTool } from "@modules/tools/toolsExport";
-import type PixelDocument from "@modules/editor/core/PixelDocument";
+import type PixelDocument from "@modules/PixelDocument";
 import type HistoryManager from "@modules/history/HistoryManager";
 
 export interface ITool {

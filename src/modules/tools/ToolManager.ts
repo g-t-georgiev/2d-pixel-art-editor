@@ -1,9 +1,9 @@
 import type { Position } from "@modules/types";
-import type Application from "@modules/editor/Application";
+import type Application from "@modules/Application";
 import type { ITool, ToolContext, Tools } from "@modules/tools/types";
-import type PixelDocument from "@modules/editor/core/PixelDocument";
+import type PixelDocument from "@modules/PixelDocument";
 import type HistoryManager from "@modules/history/HistoryManager";
-import { PointerEventType } from "@modules/editor/controllers/InputController";
+import { PointerEventType } from "@modules/InputController";
 import { PenTool, EraserTool, BucketTool, EyeDropperTool } from "@modules/tools/toolsExport";
 import { ApplicationStateActions, applicationStore } from "@modules/store";
 

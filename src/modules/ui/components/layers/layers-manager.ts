@@ -1,6 +1,6 @@
-import { type WebComponent, WebComponentBase, customElement, html } from "@modules/utils/components";
+import { type WebComponent, WebComponentBase, customElement, html } from "@modules/ui/core";
 import LayerItem from "./layer-item";
-import { LayerEvents, type LayerEventPayload, type LayersManagerEventMap } from "../types";
+import { LayerEvents, type LayerEventPayload, type LayersManagerEventMap } from "./types";
 
 /** @private */
 const getLayersManagerHtml = html<{ isExpanded: boolean; }>`

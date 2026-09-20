@@ -1,7 +1,7 @@
 import type { PixelChange, Position } from "@modules/types";
 import type { ToolContext } from "@modules/tools/types";
 import Tool from "@modules/tools/Tool";
-import MathUtils from "@modules/utils/MathUtils";
+import { MathUtils } from "@modules/utils";
 import { DrawCommand } from "@modules/history/commands";
 
 export default class PenTool extends Tool {

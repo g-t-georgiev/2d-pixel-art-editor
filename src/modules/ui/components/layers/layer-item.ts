@@ -1,5 +1,5 @@
-import { type WebComponent, WebComponentBase, customElement, html } from "@modules/utils/components";
-import { LayerEvents } from "../types";
+import { type WebComponent, WebComponentBase, customElement, html } from "@modules/ui/core";
+import { LayerEvents } from "./types";
 
 /** @private */
 const getLayerItemHtml = html<{ name: string; }>`

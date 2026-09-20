@@ -1,15 +1,14 @@
 import { ApplicationEventTypes, type Position } from "@modules/types";
-import { GlobalEmitter } from "@modules/utils/EventEmitter";
-import PixelDocument from "@modules/editor/core/PixelDocument";
-import Camera from "@modules/editor/Camera";
-import CanvasRenderer from "@modules/editor/renderers/CanvasRenderer";
-import InputController from "@modules/editor/controllers/InputController";
-import UIManager from "@modules/editor/managers/UIManager";
+import { GlobalEmitter } from "@modules/utils";
+import Camera from "@modules/Camera";
+import PixelDocument from "@modules/PixelDocument";
+import { CanvasRenderer } from "@modules/render";
+import InputController from "@modules/InputController";
+import { UIManager, LayersController } from "@modules/ui";
 import { ToolManager } from "@modules/tools";
-import ExportsManager from "@modules/editor/managers/ExportsManager";
+import { ExportsManager } from "@modules/export";
 import { HistoryManager, ClearCommand, ResizeCommand } from "@modules/history";
 import { ApplicationStateActions, applicationStore } from "@modules/store";
-import LayersController from "@modules/layers/LayersController";
 
 export default class Application {
   isDrawing = false;

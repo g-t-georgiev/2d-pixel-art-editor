@@ -1,7 +1,7 @@
 import type { Position } from "@modules/types";
-import type Application from "@modules/editor/Application";
-import type Camera from "@modules/editor/Camera";
-import type PixelDocument from "@modules/editor/core/PixelDocument";
+import type Application from "@modules/Application";
+import type Camera from "@modules/Camera";
+import type PixelDocument from "@modules/PixelDocument";
 import type { ToolManager } from "@modules/tools";
 import {
   BackgroundRenderer,
@@ -9,7 +9,7 @@ import {
   GridOverlayRenderer,
   RulersOverlayRenderer,
   CursorOverlayRenderer
-} from "@modules/editor/renderers/renderersExport";
+} from "@modules/render/renderers";
 import { applicationStore } from "@modules/store";
 
 export default class CanvasRenderer {

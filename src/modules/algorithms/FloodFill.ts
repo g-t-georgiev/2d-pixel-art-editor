@@ -1,5 +1,5 @@
 import type { Color, PixelChange } from "@modules/types";
-import type PixelDocument from "@modules/editor/core/PixelDocument";
+import type PixelDocument from "@modules/PixelDocument";
 
 export default class FloodFill {
   static execute(

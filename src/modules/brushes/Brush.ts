@@ -1,4 +1,4 @@
-import PixelDocument from "../editor/core/PixelDocument";
+import PixelDocument from "@modules/PixelDocument";
 
 abstract class Brush {
   size = 1;

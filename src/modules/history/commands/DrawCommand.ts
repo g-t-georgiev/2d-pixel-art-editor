@@ -1,5 +1,5 @@
 import type { PixelChange } from "@modules/types";
-import type PixelDocument from "@modules/editor/core/PixelDocument";
+import type PixelDocument from "@modules/PixelDocument";
 import Command from "@modules/history/commands/Command";
 export default class DrawCommand extends Command {
   constructor(
