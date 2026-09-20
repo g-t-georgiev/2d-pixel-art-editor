@@ -20,7 +20,7 @@ export default class LayersController {
   toggleActive(id: string) {
     if (!this.doc.getLayer(id)) return;
 
-    this.doc.activeLayerId = id;
+    this.doc.setActiveLayer(id);
   }
 
   toggleVisibility(id: string, visible: boolean) {

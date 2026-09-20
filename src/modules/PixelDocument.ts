@@ -3,8 +3,9 @@ import PixelDocumentLayer from "@modules/PixelDocumentLayer";
 
 export default class PixelDocument {
   layers: PixelDocumentLayer[] = [];
-  activeLayerId: string | null = null;
-  layerIdCounter: number = 0;
+  private _activeLayerId: string | null = null;
+  private layerIdCounter: number = 0;
+  alphaDimming: number = 0.2;
 
   constructor(
     public width: number = 16,
@@ -12,6 +13,10 @@ export default class PixelDocument {
   ) {
     this.width = width;
     this.height = height;
+  }
+
+  get activeLayerId() {
+    return this._activeLayerId;
   }
 
   /** Resizes the document and safely maps existing pixel data to the new grid dimensions. */
@@ -88,7 +93,7 @@ export default class PixelDocument {
 
     this.layers.push(layer);
 
-    if (active || !this.activeLayerId) this.activeLayerId = layer.id;
+    if (active || !this.activeLayerId) this.setActiveLayer(layer.id);
 
     return layer;
   }
@@ -100,6 +105,10 @@ export default class PixelDocument {
 
   getActiveLayer() {
     return this.layers.find(l => l.id === this.activeLayerId) || this.layers[0];
+  }
+
+  setActiveLayer(id: string) {
+    this._activeLayerId = id;
   }
 
   isWithinBounds(x: number, y: number, layerId = this.activeLayerId) {

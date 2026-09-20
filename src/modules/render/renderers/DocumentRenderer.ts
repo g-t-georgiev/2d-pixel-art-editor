@@ -10,13 +10,13 @@ export default class DocumentRenderer {
   ) { }
 
   render(isPreviewMode: boolean = false) {
-    const { layers, width, height } = this.doc;
+    const { layers, width, height, alphaDimming } = this.doc;
 
     if (isPreviewMode) {
       this.renderComposite(this.context, layers);
     } else {
       const activeLayer = this.doc.getActiveLayer();
-      this.renderFocusMode(this.context, layers, activeLayer);
+      this.renderFocusMode(this.context, layers, activeLayer, alphaDimming);
     }
 
     // Draw Workspace Canvas Border
@@ -55,13 +55,14 @@ export default class DocumentRenderer {
   private renderFocusMode(
     context: CanvasRenderingContext2D,
     layers: PixelDocumentLayer[],
-    activeLayer: PixelDocumentLayer
+    activeLayer: PixelDocumentLayer,
+    alphaDimming: number
   ) {
     const inactiveLayers = layers.filter((layer) => layer.id !== activeLayer.id && layer.visible);
 
     for (const layer of inactiveLayers) {
       context.save();
-      context.globalAlpha = layer.opacity * 0.2;
+      context.globalAlpha = layer.opacity * alphaDimming;
       this.drawLayerGrid(context, layer);
       context.restore();
     }
