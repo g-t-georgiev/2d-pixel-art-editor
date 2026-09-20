@@ -9,7 +9,7 @@ import {
 } from "./actions";
 
 const initialState: ApplicationState = {
-  currentColor: "#ffff00",
+  currentColor: "#ffee00",
   currentTool: "pen",
   previousTool: "pen",
   penSize: 1,
