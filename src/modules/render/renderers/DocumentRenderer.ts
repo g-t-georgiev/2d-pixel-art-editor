@@ -34,7 +34,7 @@ export default class DocumentRenderer {
         if (color === null) continue;
 
         context.fillStyle = color;
-        context.fillRect(x, y, 1, 1);
+        context.fillRect(x, y, 1.01, 1.01);
       }
     }
   }
