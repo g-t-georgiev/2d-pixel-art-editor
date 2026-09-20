@@ -21,7 +21,6 @@ export enum PointerEventType {
 
 export default class InputController {
   private lastMouse: Position = { x: 0, y: 0 };
-
   public mouseScreenPos: Position = { x: -1, y: -1 };
 
   constructor(

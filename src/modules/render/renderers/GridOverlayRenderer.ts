@@ -5,13 +5,16 @@ import { applicationStore } from "@modules/store";
 export default class GridOverlayRenderer {
   constructor(
     private context: CanvasRenderingContext2D,
-    private camera: Camera
+    private camera: Camera,
+    private doc: PixelDocument
   ) { }
 
-  render(doc: PixelDocument) {
+  render() {
     const { preferences: { grid } } = applicationStore.getState();
 
     if (!grid.enabled || this.camera.zoom < 4) return;
+
+    const { width, height } = this.doc;
 
     this.context.save();
 
@@ -24,17 +27,17 @@ export default class GridOverlayRenderer {
     this.context.beginPath();
 
     // Vertical column grid lines
-    for (let col = 0; col <= doc.width; col++) {
+    for (let col = 0; col <= width; col++) {
       const x = col + halfPixelOffset;
       this.context.moveTo(x, 0);
-      this.context.lineTo(x, doc.height);
+      this.context.lineTo(x, height);
     }
 
     // Horizontal row grid lines
-    for (let row = 0; row <= doc.height; row++) {
+    for (let row = 0; row <= height; row++) {
       const y = row + halfPixelOffset;
       this.context.moveTo(0, y);
-      this.context.lineTo(doc.width, y);
+      this.context.lineTo(width, y);
     }
 
     this.context.stroke();

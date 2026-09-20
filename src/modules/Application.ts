@@ -14,6 +14,7 @@ export default class Application {
   isDrawing = false;
   isPanning = false;
   isQuickColorPicking = false;
+  isPreviewMode = false;
 
   readonly camera: Camera;
   readonly renderer: CanvasRenderer;

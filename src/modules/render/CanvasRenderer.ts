@@ -1,4 +1,4 @@
-import type { Position } from "@modules/types";
+import type { Color, Position } from "@modules/types";
 import type Application from "@modules/Application";
 import type Camera from "@modules/Camera";
 import type PixelDocument from "@modules/PixelDocument";
@@ -33,8 +33,8 @@ export default class CanvasRenderer {
 
     // Sub-renderers
     this.backgroundRenderer = new BackgroundRenderer(this.context);
-    this.documentRenderer = new DocumentRenderer(this.context, camera);
-    this.gridOverlayRenderer = new GridOverlayRenderer(this.context, camera);
+    this.documentRenderer = new DocumentRenderer(this.context, camera, this.doc);
+    this.gridOverlayRenderer = new GridOverlayRenderer(this.context, camera, this.doc);
     this.rulerOverlayRenderer = new RulersOverlayRenderer(this.context, camera, rulerSize);
     this.cursorOverlayRenderer = new CursorOverlayRenderer(this.context, camera);
   }
@@ -44,6 +44,7 @@ export default class CanvasRenderer {
     const { penSize, currentColor} = applicationStore.getState();
     const {
       isDrawing,
+      isPreviewMode,
       canvasWidthInCSSPixels,
       canvasHeightInCSSPixels
     } = this.app;
@@ -64,10 +65,29 @@ export default class CanvasRenderer {
     this.context.translate(this.camera.x, this.camera.y);
     this.context.scale(this.camera.zoom, this.camera.zoom);
 
-    this.backgroundRenderer.render(this.doc.width, this.doc.height);
-    this.documentRenderer.render(this.doc);
-    this.gridOverlayRenderer.render(this.doc);
+    const { width, height } = this.doc;
+    this.backgroundRenderer.render(width, height);
+    this.documentRenderer.render(isPreviewMode);
 
+    if (!isPreviewMode) {
+      this.gridOverlayRenderer.render();
+      this.renderHoverEffects(isDrawing, mouseScreenPos, penSize, currentColor);
+    }
+
+    this.context.restore(); // Exit camera space, back to CSS screen space
+
+    // HUD & UI Overlays
+    this.rulerOverlayRenderer.render(canvasWidthInCSSPixels, canvasHeightInCSSPixels, mouseScreenPos);
+
+    this.context.restore(); // Exit DPR scaling space
+  }
+
+  private renderHoverEffects(
+    isDrawing: boolean,
+    mouseScreenPos: Position,
+    penSize: number,
+    currentColor: Color
+  ) {
     if (!isDrawing) {
       // Hover Preview overlay
       const rect = this.canvas.getBoundingClientRect();
@@ -80,12 +100,5 @@ export default class CanvasRenderer {
       const activeToolName = this.tools.getActiveTool()?.name;
       this.cursorOverlayRenderer.render(this.doc, gridCoords, activeToolName, penSize, currentColor);
     }
-
-    this.context.restore(); // Exit camera space, back to CSS screen space
-
-    // UI Overlays
-    this.rulerOverlayRenderer.render(canvasWidthInCSSPixels, canvasHeightInCSSPixels, mouseScreenPos);
-
-    this.context.restore(); // Exit DPR scaling space
   }
 }

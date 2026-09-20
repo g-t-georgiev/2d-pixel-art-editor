@@ -21,7 +21,8 @@ const Elements = {
     bucket: document.getElementById("toolBucket"),
     eraser: document.getElementById("toolEraser"),
     eyedropper: document.getElementById("toolEyedropper"),
-  }
+  },
+  previewToggleBtn: document.querySelector("#previewToggleBtn"),
 } as const;
 
 export default class UIManager {
@@ -35,7 +36,7 @@ export default class UIManager {
   }
 
   private attachDOMEventListeners() {
-    const { btnExport } = this.elements;
+    const { btnExport, previewToggleBtn } = this.elements;
 
     this.attachToolHandlers();
     this.attachColorChangeHandlers();
@@ -43,6 +44,12 @@ export default class UIManager {
     this.attachZoomButtonHandlers();
 
     btnExport?.addEventListener("click", () => this.app.exportPNG());
+
+    previewToggleBtn?.addEventListener("change", (ev) => {
+      const target = ev.target as HTMLInputElement;
+      const isChecked = target.checked;
+      this.app.isPreviewMode = isChecked;
+    });
   }
 
   private attachZoomButtonHandlers() {

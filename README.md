@@ -111,7 +111,7 @@ root/
 │   │   ├── InputController.ts
 │   │   ├── PixelDocument.ts
 │   │   ├── PixelDocumentLayer.ts
-│   │   └── types.js
+│   │   └── types.ts
 │   │
 │   └── styles/
 │       └── styles.css
