@@ -88,7 +88,7 @@ export default class InputController {
       this.lastMouse = { x: ev.clientX, y: ev.clientY };
       this.viewport.classList.add("panning");
       this.viewport.setPointerCapture(ev.pointerId);
-    } else if (ev.button === 0) {
+    } else if (ev.button === 0 && !this.app.isPreviewMode) {
       this.app.isDrawing = true;
       const coords = this.getGridCoords(ev);
       this.tools.applyActiveTool(PointerEventType.Down, coords);
@@ -107,6 +107,8 @@ export default class InputController {
     const maxLocalX = rect.width - ruler.mouseIndicatorThickness;
     const maxLocalY = rect.height - ruler.mouseIndicatorThickness;
 
+    const { isDrawing, isPreviewMode, isPanning } = this.app;
+
     this.mouseScreenPos = {
       x: Math.max(minBound, Math.min(localX, maxLocalX)),
       y: Math.max(minBound, Math.min(localY, maxLocalY))
@@ -115,19 +117,21 @@ export default class InputController {
     const coords = this.getGridCoords(ev);
     this.app.updateCoordsDisplay(coords);
 
-    if (this.app.isPanning) {
+    if (isPanning) {
       const dx = ev.clientX - this.lastMouse.x;
       const dy = ev.clientY - this.lastMouse.y;
 
       this.app.updateCameraPos(dx, dy);
       this.lastMouse = { x: ev.clientX, y: ev.clientY };
-    } else if (this.app.isDrawing) {
+    } else if (isDrawing && !isPreviewMode) {
       this.tools.applyActiveTool(PointerEventType.Move, coords);
     }
   }
 
   onMouseUp(ev: PointerEvent) {
-    if (this.app.isDrawing) {
+    const { isDrawing, isPreviewMode } = this.app;
+
+    if (isDrawing && !isPreviewMode) {
       const coords = this.getGridCoords(ev);
       this.tools.applyActiveTool(PointerEventType.Up, coords);
       this.app.isDrawing = false;
