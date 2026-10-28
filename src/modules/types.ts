@@ -12,6 +12,9 @@ export enum ApplicationEventTypes {
   // Declare event types here...
 };
 
+export type EventSubscriber = (...params: never[]) => unknown;
+export type EventsMap<Shape> = { [K in keyof Shape]: EventSubscriber };
+
 export type ApplicationEventsMap = {
   [ApplicationEventTypes.PickColor]: (payload: { color: Color; trySwitchTool: boolean }) => void;
   // Declare callback shapes for events...

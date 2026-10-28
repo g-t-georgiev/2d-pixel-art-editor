@@ -1,14 +1,9 @@
-import type { ApplicationEventsMap } from "../types";
+import type { ApplicationEventsMap, EventSubscriber, EventsMap } from "../types";
 
-// Make the EventEmitter generic
-export default class EventEmitter<Events extends Record<string, (...args: any[]) => any>> {
-  // Internally, we use `keyof Events` and `Function` to avoid complex type gymnastics.
-  // The public methods enforce the strict types.
-  private events: Map<keyof Events, Set<Function>> = new Map();
+export default class EventEmitter<Events extends EventsMap<Events>> {
+  private events: Map<keyof Events, Set<EventSubscriber>> = new Map();
 
-  /**
-   * Register new event listener.
-   */
+  /** Register new event listener. */
   on<K extends keyof Events>(eventName: K, callback: Events[K]): boolean {
     if (!this.events.has(eventName)) {
       this.events.set(eventName, new Set());
@@ -22,9 +17,7 @@ export default class EventEmitter<Events extends Record<string, (...args: any[])
     return true;
   }
 
-  /**
-   * Remove registered event listener.
-   */
+  /** Remove registered event listener. */
   off<K extends keyof Events>(eventName: K, callback?: Events[K]): boolean {
     if (!this.events.has(eventName)) return false;
 
@@ -36,10 +29,7 @@ export default class EventEmitter<Events extends Record<string, (...args: any[])
     return true;
   }
 
-  /**
-   * Emit an event.
-   * `Parameters<Events[K]>` ensures you pass the exact arguments the callback expects.
-   */
+  /** Emit an event. */
   emit<K extends keyof Events>(eventName: K, ...params: Parameters<Events[K]>): void {
     if (!this.events.has(eventName)) return;
 
